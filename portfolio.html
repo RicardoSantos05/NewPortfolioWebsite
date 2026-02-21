@@ -25,7 +25,7 @@
         background: var(--bg-dark); color: #eaf6ff; 
         font-family: 'Inter', sans-serif; overflow: hidden;
         height: 100%; width: 100%;
-        touch-action: none; /* Necessário para o Draggable em mobile */
+        touch-action: none; 
     }
 
     #hud-flash {
@@ -232,13 +232,25 @@
     .vam-logo-container { width: 300px; height: 300px; flex-shrink: 0; display: grid; place-items: center; border: 1px solid rgba(79, 195, 255, 0.15); background: rgba(0,0,0,0.3); padding: 30px; transition: filter 0.8s; }
     .vam-logo-container img { width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 0 10px var(--accent-color)); }
 
-    /* ================= MOBILE OPTIMIZATIONS ================= */
+    /* ================= MOBILE OPTIMIZATIONS FIXED ================= */
     @media (max-width: 1100px) { 
         *, *::before, *::after { cursor: auto !important; }
         #cursor-container { display: none; }
         
-        section { padding: 80px 20px 20px 20px; overflow-y: auto; display: block; }
-        #main-wrapper { overflow: hidden; }
+        body, html { overflow-y: auto !important; height: auto !important; touch-action: auto !important; }
+        #main-wrapper { height: auto !important; overflow: visible !important; }
+
+        section { 
+            position: relative !important; 
+            height: auto !important; 
+            min-height: 100vh;
+            padding: 60px 20px 40px 20px !important; 
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            filter: none !important;
+        }
 
         .display-core { grid-template-columns: 1fr; display: flex; flex-direction: column; gap: 10px; } 
         .project-info-hub { display: flex; padding: 15px; margin-top: 10px; height: auto; border-left: 2px solid var(--accent-color); } 
@@ -246,26 +258,27 @@
         .info-body p { font-size: 0.8rem; }
         .tech-grid { grid-template-columns: 1fr 1fr; }
         
-        .cinema-container { height: auto; padding-top: 20px; }
+        .cinema-container { height: auto; padding-top: 10px; opacity: 1 !important; }
         .selection-hud { height: 100px; margin-top: 15px; }
         .hud-card { min-width: 160px; height: 70px; padding: 10px; }
         .hud-card .title-tag { font-size: 0.7rem; }
         #project-next-btn { min-width: 50px; font-size: 1.5rem; }
 
-        .hero-content, .about-content, .edu-content { flex-direction: column; text-align: center; gap: 30px; } 
-        .hero-selfie-box { width: 140px; height: 140px; margin: 0 auto; }
-        .about-selfie-box { width: 180px; height: 180px; margin: 0 auto; }
-        .vam-logo-container { width: 150px; height: 150px; margin: 0 auto; }
+        .hero-content, .about-content, .edu-content { flex-direction: column; text-align: center; gap: 30px; opacity: 1 !important; } 
+        .hero-selfie-box { width: 140px; height: 140px; margin: 0 auto; opacity: 1 !important; transform: none !important; }
+        .about-selfie-box { width: 180px; height: 180px; margin: 0 auto; opacity: 1 !important; transform: none !important; }
+        .vam-logo-container { width: 150px; height: 150px; margin: 0 auto; opacity: 1 !important; }
         
         #energy-name { font-size: 2.5rem; }
-        .tech-deck { display: grid; grid-template-columns: repeat(3, 1fr); place-items: center; gap: 20px; }
+        .tech-deck { display: grid; grid-template-columns: repeat(3, 1fr); place-items: center; gap: 20px; opacity: 1 !important; }
         .tech-item { width: 50px; height: 50px; }
         
-        .vertical-hud-nav { right: 10px; gap: 10px; }
-        .nav-arrow { width: 35px; height: 35px; font-size: 0.9rem; }
+        .vertical-hud-nav { display: none; } /* Setas de navegação não são necessárias com scroll natural */
         
-        #skills > div { grid-template-columns: 1fr !important; }
-        .terminal-output { padding: 15px; font-size: 0.9rem; }
+        #skills > div { grid-template-columns: 1fr !important; opacity: 1 !important; }
+        .terminal-output { padding: 15px; font-size: 0.9rem; opacity: 1 !important; }
+        
+        .section-title { margin-bottom: 20px; opacity: 1 !important; }
     }
   </style>
 </head>
@@ -474,7 +487,7 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerReady(event) {
-    if (Math.round(currentProg) === 1) event.target.playVideo();
+    if (!isMobile && Math.round(currentProg) === 1) event.target.playVideo();
 }
 
 function initHUDCursor() {
@@ -506,7 +519,7 @@ function initNeuralBackground() {
         constructor() { this.init(); }
         init() {
             this.x = Math.random() * window.innerWidth;
-            this.y = Math.random() * worldHeight;
+            this.y = Math.random() * (isMobile ? window.innerHeight : worldHeight);
             this.vx = (Math.random() - 0.5) * 0.6;
             this.vy = (Math.random() - 0.5) * 0.6;
             this.size = Math.random() * 2;
@@ -514,10 +527,11 @@ function initNeuralBackground() {
         update() {
             this.x += this.vx; this.y += this.vy;
             if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
-            if (this.y < 0 || this.y > worldHeight) this.vy *= -1;
+            const limit = isMobile ? window.innerHeight : worldHeight;
+            if (this.y < 0 || this.y > limit) this.vy *= -1;
         }
         draw(offsetY) {
-            const screenY = this.y - offsetY;
+            const screenY = isMobile ? this.y : this.y - offsetY;
             if (screenY > -150 && screenY < window.innerHeight + 150) {
                 ctx.fillStyle = backgroundState.color;
                 ctx.beginPath(); ctx.arc(this.x, screenY, this.size, 0, Math.PI * 2); ctx.fill();
@@ -529,13 +543,14 @@ function initNeuralBackground() {
         const offsetY = currentProg * window.innerHeight;
         for (let i = 0; i < particles.length; i++) {
             particles[i].update(); particles[i].draw(offsetY);
-            if (i > (isMobile ? 100 : 250)) continue; 
-            for (let j = i + 1; j < (isMobile ? 100 : 250); j++) {
+            if (i > (isMobile ? 50 : 250)) continue; 
+            for (let j = i + 1; j < (isMobile ? 50 : 250); j++) {
                 const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 150) {
-                    const y1 = particles[i].y - offsetY, y2 = particles[j].y - offsetY;
+                if (dist < 100) {
+                    const y1 = isMobile ? particles[i].y : particles[i].y - offsetY;
+                    const y2 = isMobile ? particles[j].y : particles[j].y - offsetY;
                     if (y1 > -100 && y1 < window.innerHeight + 100) {
-                        ctx.strokeStyle = backgroundState.color; ctx.globalAlpha = 0.25 * (1 - dist/150); ctx.lineWidth = 0.8;
+                        ctx.strokeStyle = backgroundState.color; ctx.globalAlpha = 0.2 * (1 - dist/100); ctx.lineWidth = 0.5;
                         ctx.beginPath(); ctx.moveTo(particles[i].x, y1); ctx.lineTo(particles[j].x, y2); ctx.stroke(); ctx.globalAlpha = 1.0;
                     }
                 }
@@ -544,7 +559,7 @@ function initNeuralBackground() {
         requestAnimationFrame(animate);
     }
     resize(); window.addEventListener('resize', resize);
-    for (let i = 0; i < (isMobile ? 150 : 500); i++) particles.push(new Particle());
+    for (let i = 0; i < (isMobile ? 80 : 500); i++) particles.push(new Particle());
     animate();
 }
 
@@ -563,12 +578,14 @@ function scrambleEffect(element, customText = null, isTitle = false) {
     const finalStr = customText || element.getAttribute('data-final-text') || element.innerText;
     element.setAttribute('data-final-text', finalStr);
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    
     if (element.id === "energy-name" || (isTitle && finalStr.includes("ABOUT ME"))) {
         const targetBox = element.id === "energy-name" ? ".hero-selfie-box" : ".about-selfie-box";
         const targetSl = element.id === "energy-name" ? ".sl-hero" : ".sl-about";
         gsap.to(targetBox, { opacity: 1, x: 0, duration: 1.5, ease: "power4.out", overwrite: true });
         gsap.to(targetSl, { top: "110%", duration: 1.5, ease: "none", repeat: -1, repeatDelay: 3 });
     }
+
     let obj = { val: 0 };
     gsap.to(obj, {
         val: finalStr.length,
@@ -601,19 +618,21 @@ function startPeriodicPulse() {
 }
 
 function animateSectionHUD(idx, direction = "in") {
+    if (isMobile) return; // No mobile o conteúdo já está visível
     const section = sections[idx];
     if (!section) return;
     const targets = section.querySelectorAll('.section-title, .terminal-output, .cinema-container, .display-core, .tech-grid, .about-content, .edu-content, .tech-deck, .hero-sub-tag');
     if (direction === "in") {
         gsap.fromTo("#hud-flash", { opacity: 0.8 }, { opacity: 0, duration: 0.5 });
-        gsap.fromTo(targets, { opacity: 0, y: isMobile ? 30 : 100, skewX: isMobile ? 0 : 30, filter: "blur(20px)" }, { 
+        gsap.fromTo(targets, { opacity: 0, y: 100, skewX: 30, filter: "blur(20px)" }, { 
             opacity: 1, y: 0, skewX: 0, filter: "blur(0px)", 
             duration: 0.8, stagger: 0.08, ease: "expo.out", overwrite: true
         });
-    } else { gsap.to(targets, { opacity: 0, y: isMobile ? -30 : -100, skewX: isMobile ? 0 : -15, filter: "blur(10px)", duration: 0.4, overwrite: true }); }
+    } else { gsap.to(targets, { opacity: 0, y: -100, skewX: -15, filter: "blur(10px)", duration: 0.4, overwrite: true }); }
 }
 
 function updateGavetas(p) {
+    if (isMobile) return;
     const oldIdx = Math.round(currentProg);
     p = gsap.utils.clamp(0, sections.length - 1, p);
     const newIdx = Math.round(p);
@@ -696,47 +715,62 @@ function initEngine() {
         card.addEventListener('click', (e) => { e.stopPropagation(); selectProject(i); }); 
         track.appendChild(card);
     });
+
+    if (isMobile) {
+        // Ativa visibilidade total no mobile
+        gsap.set("section, .cinema-container, .display-core, .terminal-output, .about-content, .edu-content, .tech-deck, .section-title", { 
+            opacity: 1, visibility: "visible", y: 0 
+        });
+        document.getElementById('main-wrapper').style.visibility = "visible";
+        document.getElementById('main-wrapper').style.opacity = "1";
+    }
+
     document.getElementById('project-next-btn').addEventListener('click', (e) => { e.stopPropagation(); selectProject((activeProjectIdx + 1) % projectData.length); });
-    document.getElementById('navUp').addEventListener('click', () => animateToIdx(Math.max(0, Math.round(currentProg) - 1)));
-    document.getElementById('navDown').addEventListener('click', () => animateToIdx(Math.min(sections.length - 1, Math.round(currentProg) + 1)));
-
-    animateSectionHUD(0, "in");
-    selectProject(0);
-    scrambleEffect(document.getElementById('energy-name'), "RICARDO SANTOS", true);
-    updateGavetas(0);
-    startPeriodicPulse(); 
-    gsap.set("#main-wrapper", { visibility: "visible", opacity: 1 });
     
-    // Ajuste de sensibilidade Draggable para Mobile
-    verticalDrag = Draggable.create(dragSurface, { 
-        type: "y", 
-        trigger: "body", 
-        dragResistance: isMobile ? 0.2 : 0.5,
-        onDrag: () => updateGavetas(-verticalDrag.y / (window.innerHeight / (isMobile ? 1.1 : 1.5))), 
-        onDragEnd: () => animateToIdx(Math.round(currentProg)) 
-    })[0];
-
-    window.addEventListener("wheel", (e) => animateToIdx(gsap.utils.clamp(0, sections.length - 1, Math.round(currentProg) + (e.deltaY > 0 ? 1 : -1))), { passive: true });
-    
-    gsap.to(".tech-item", {
-        y: -10, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut",
-        stagger: { each: 0.2, from: "center" }
-    });
-
     if (!isMobile) {
+        document.getElementById('navUp').addEventListener('click', () => animateToIdx(Math.max(0, Math.round(currentProg) - 1)));
+        document.getElementById('navDown').addEventListener('click', () => animateToIdx(Math.min(sections.length - 1, Math.round(currentProg) + 1)));
+        
+        verticalDrag = Draggable.create(dragSurface, { 
+            type: "y", 
+            trigger: "body", 
+            onDrag: () => updateGavetas(-verticalDrag.y / (window.innerHeight / 1.5)), 
+            onDragEnd: () => animateToIdx(Math.round(currentProg)) 
+        })[0];
+
+        window.addEventListener("wheel", (e) => animateToIdx(gsap.utils.clamp(0, sections.length - 1, Math.round(currentProg) + (e.deltaY > 0 ? 1 : -1))), { passive: true });
+        
         document.addEventListener('mousemove', (e) => {
             const x = (e.clientX - window.innerWidth / 2) / 50;
             const y = (e.clientY - window.innerHeight / 2) / 50;
             gsap.to("#energy-name", { x: x, y: y, duration: 0.5, ease: "power2.out" });
             gsap.to(".hero-sub-tag", { x: -x*1.5, y: -y*1.5, duration: 0.7, ease: "power2.out" });
         });
+
+        animateSectionHUD(0, "in");
+        updateGavetas(0);
     }
+
+    selectProject(0);
+    scrambleEffect(document.getElementById('energy-name'), "RICARDO SANTOS", true);
+    startPeriodicPulse(); 
+    gsap.set("#main-wrapper", { visibility: "visible", opacity: 1 });
+    
+    gsap.to(".tech-item", {
+        y: -10, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut",
+        stagger: { each: 0.2, from: "center" }
+    });
 }
 
 function animateToIdx(idx) { 
+    if (isMobile) {
+        const target = sections[idx];
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
     sections.forEach(s => gsap.set(s, { clearProps: "filter" }));
-    const targetY = -idx * (window.innerHeight / (isMobile ? 1.1 : 1.5));
-    gsap.to(dragSurface, { y: targetY, duration: 0.8, onUpdate: () => { if(verticalDrag) verticalDrag.update(); updateGavetas(-verticalDrag.y / (window.innerHeight / (isMobile ? 1.1 : 1.5))); } }); 
+    const targetY = -idx * (window.innerHeight / 1.5);
+    gsap.to(dragSurface, { y: targetY, duration: 0.8, onUpdate: () => { if(verticalDrag) verticalDrag.update(); updateGavetas(-verticalDrag.y / (window.innerHeight / 1.5)); } }); 
 }
 
 window.onload = () => {
@@ -797,11 +831,11 @@ const toggleMenu = (open) => {
 
 navZone.addEventListener('mouseenter', () => !isMobile && toggleMenu(true));
 navFrame.addEventListener('mouseleave', () => !isMobile && toggleMenu(false));
-// Suporte para Click/Touch no INDEX em Mobile
+
 document.getElementById('navTab').addEventListener('click', (e) => {
     e.stopPropagation();
-    const isOpen = navFrame.style.transform === "translateX(0px)";
-    toggleMenu(!isOpen);
+    const currentX = gsap.getProperty(navFrame, "x");
+    toggleMenu(currentX < 0);
 });
 
 document.querySelectorAll('.menu-link').forEach(link => link.addEventListener('click', (e) => { 
