@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>R-SYSTEM | Ricardo Santos</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+
+  <style>
+    /* ================= BASE ================= */
+    *, *::before, *::after, #project-next-btn, .nav-arrow { cursor: none !important; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root { 
+        --accent-color: #4fc3ff; 
+        --extra-color: #bc4fff; 
+        --bg-dark: #01060a; 
+    }
+    
+    body, html { 
+        background: var(--bg-dark); color: #eaf6ff; 
+        font-family: 'Inter', sans-serif; overflow: hidden;
+        height: 100%; width: 100%;
+    }
+
+    #hud-flash {
+        position: fixed; inset: 0; background: white; z-index: 20000;
+        pointer-events: none; opacity: 0; mix-blend-mode: overlay;
+    }
+
+    /* ================= CUSTOM HUD CURSOR ================= */
+    #cursor-container {
+        position: fixed; top: 0; left: 0; width: 60px; height: 60px;
+        pointer-events: none; z-index: 100000;
+        display: grid; place-items: center; 
+        transform: translate(-50%, -50%);
+        will-change: transform;
+    }
+    #cursor-dot { width: 4px; height: 4px; background: #fff; border-radius: 50%; grid-area: 1/1; box-shadow: 0 0 10px #fff; }
+    #hud-rotation-wrapper { grid-area: 1/1; width: 34px; height: 34px; position: relative; display: grid; place-items: center; }
+    .hud-bracket { position: absolute; width: 10px; height: 10px; border: 2px solid var(--accent-color); will-change: transform; }
+    #b1 { border-right: none; border-bottom: none; top: 0; left: 0; }
+    #b2 { border-left: none; border-bottom: none; top: 0; right: 0; }
+    #b3 { border-right: none; border-top: none; bottom: 0; left: 0; }
+    #b4 { border-left: none; border-top: none; bottom: 0; right: 0; }
+
+    #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.6; pointer-events: none; }
+    .grid-overlay { position: fixed; inset: 0; z-index: 2; background: linear-gradient(rgba(79, 195, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 195, 255, 0.02) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+
+    /* ================= BOOT ANIMATION IMPROVED ================= */
+    #boot { position: fixed; inset: 0; background: black; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30000; padding: 20px; }
+    .boot-loader { width: 300px; height: 2px; background: rgba(79, 195, 255, 0.1); margin-top: 20px; position: relative; overflow: hidden; }
+    .boot-bar { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--accent-color); box-shadow: 0 0 15px var(--accent-color); }
+    .boot-text { font-family: 'Courier New', monospace; color: var(--accent-color); font-size: 0.8rem; line-height: 1.4; text-shadow: 0 0 5px var(--accent-color); width: 300px; height: 120px; overflow: hidden; }
+
+    /* ================= VERTICAL NAV ARROWS ================= */
+    .vertical-hud-nav {
+        position: fixed; right: 30px; top: 50%; transform: translateY(-50%);
+        display: flex; flex-direction: column; gap: 20px; z-index: 25000;
+    }
+    .nav-arrow {
+        width: 44px; height: 44px; border: 1px solid var(--accent-color);
+        background: rgba(1, 10, 15, 0.6); display: flex; align-items: center;
+        justify-content: center; color: var(--accent-color); font-family: 'Orbitron';
+        font-size: 1.2rem; transition: all 0.3s; backdrop-filter: blur(5px);
+    }
+    .nav-arrow:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 20px var(--accent-color); }
+    .nav-arrow.disabled { opacity: 0.1; pointer-events: none; }
+
+    /* ================= HERO INNOVATION ================= */
+    .hero-text { position: relative; perspective: 1000px; }
+    #energy-name { 
+        font-family: 'Orbitron'; 
+        font-size: clamp(2.5rem, 6vw, 6rem); 
+        margin-bottom: 5px; 
+        position: relative;
+        letter-spacing: -2px;
+    }
+    .hero-sub-tag {
+        font-family: 'Orbitron';
+        font-size: 0.7rem;
+        letter-spacing: 10px;
+        color: var(--accent-color);
+        margin-bottom: 20px;
+        display: block;
+        opacity: 0.8;
+    }
+
+    /* ================= ÍNDICE ================= */
+    .nav-hot-zone { position: fixed; left: 0; top: 0; width: 40px; height: 100vh; z-index: 26000; background: transparent; }
+    .nav-frame { 
+        position: fixed; left: 0; top: 0; width: 280px; height: 100vh; 
+        background: rgba(1, 6, 10, 0.98); border-right: 2px solid var(--accent-color); 
+        z-index: 25500; display: flex; flex-direction: column; padding: 40px 30px; 
+        backdrop-filter: blur(15px); transform: translateX(-100%); 
+    }
+    .nav-tab {
+        position: absolute; right: -26px; top: 50%; width: 26px; height: 80px;
+        background: var(--bg-dark); border: 1px solid var(--accent-color);
+        border-left: none; border-radius: 0 4px 4px 0;
+        display: flex; align-items: center; justify-content: center;
+        transform: translateY(-50%); pointer-events: none;
+    }
+    .nav-tab span { writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'Orbitron'; color: var(--accent-color); font-size: 0.55rem; font-weight: 900; letter-spacing: 2px; }
+
+    .side-index { display: flex; flex-direction: column; gap: 5px; }
+    .menu-link { 
+        font-size: 0.9rem; color: var(--accent-color); text-decoration: none; 
+        opacity: 0; transform: translateX(-20px); font-family: 'Orbitron'; padding: 15px 10px; 
+        display: block; position: relative; z-index: 10;
+        transition: color 0.3s, text-shadow 0.3s, transform 0.3s;
+    }
+    .menu-link:hover { opacity: 1 !important; color: #fff; transform: translateX(10px) !important; text-shadow: 0 0 15px var(--accent-color); }
+    .menu-link.active { opacity: 1 !important; color: #fff !important; text-shadow: 0 0 20px var(--accent-color); font-weight: 700; }
+
+    /* ================= SECTIONS ================= */
+    #main-wrapper { position: relative; width: 100%; height: 100vh; visibility: hidden; opacity: 0; z-index: 10; }
+    section { height: 100vh; width: 100vw; padding: 2% 5%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; justify-content: center; background: transparent; will-change: transform, opacity, filter; }
+
+    .section-title { 
+        font-size: 1.2rem; 
+        font-family: 'Orbitron'; 
+        letter-spacing: 4px; 
+        margin-bottom: 30px; 
+        text-transform: uppercase; 
+        display: inline-block; 
+        padding-bottom: 5px; 
+        min-height: 1.5rem; 
+        opacity: 0; 
+    }
+    
+    .terminal-output, .cinema-container, .display-core, .tech-grid, .about-content, .edu-content, .tech-deck { opacity: 0; }
+
+    .selfie-wrapper { position: relative; opacity: 0; transform: translateX(-20px); }
+    .hero-selfie-box { width: 180px; height: 180px; }
+    .hero-selfie-box .selfie-container { border-radius: 50%; -webkit-mask-image: radial-gradient(circle, black 35%, transparent 65%); mask-image: radial-gradient(circle, black 35%, transparent 65%); }
+
+    .about-selfie-box { width: 380px; height: 380px; flex-shrink: 0; }
+    .about-selfie-box .selfie-container { 
+        border-radius: 50%; 
+        -webkit-mask-image: radial-gradient(circle, black 45%, transparent 70%); 
+        mask-image: radial-gradient(circle, black 45%, transparent 70%); 
+    }
+
+    .selfie-container { width: 100%; height: 100%; position: relative; overflow: hidden; background: #000; border: 1px solid rgba(79, 195, 255, 0.2); }
+    .selfie-container img { width: 100%; height: 100%; object-fit: cover; filter: sepia(1) saturate(8) hue-rotate(175deg) brightness(0.8) contrast(1.2); opacity: 0.8; }
+    .scan-filter { position: absolute; inset: 0; background: rgba(79, 195, 255, 0.1); pointer-events: none; }
+    .scanline-moving { position: absolute; top: -10%; left: 0; width: 100%; height: 4px; background: var(--accent-color); box-shadow: 0 0 15px var(--accent-color); opacity: 0.6; pointer-events: none; z-index: 10; }
+
+    .hero-content, .about-content { display: flex; align-items: center; gap: 60px; }
+    .pulse-char { display: inline-block; position: relative; transition: color 0.2s; }
+
+    /* ================= HUD PROJETOS ================= */
+    .cinema-container { display: flex; flex-direction: column; height: 85vh; width: 100%; max-width: 1400px; margin: 0 auto; z-index: 20; position: relative; gap: 20px; }
+    .display-core { display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 20px; flex: 1; align-items: stretch; }
+    .video-wrapper { width: 100%; aspect-ratio: 16 / 9; position: relative; background: #000; border: 1px solid rgba(79, 195, 255, 0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,0,0,0.7); }
+    .video-wrapper iframe { width: 100%; height: 100%; border: none; z-index: 1; position: relative; }
+    
+    .project-info-hub { display: flex; flex-direction: column; justify-content: space-between; padding: 30px; background: rgba(1, 10, 15, 0.8); border: 1px solid rgba(79, 195, 255, 0.1); backdrop-filter: blur(10px); }
+    .info-header h2 { font-family: 'Orbitron'; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; color: #fff; }
+    .info-body p { font-size: 0.9rem; line-height: 1.6; color: rgba(234, 246, 255, 0.85); }
+    .tech-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
+    .tech-tag { font-family: 'Orbitron'; font-size: 0.7rem; padding: 12px; background: rgba(79, 195, 255, 0.05); border-left: 4px solid var(--accent-color); }
+    
+    .selection-hud { display: flex; background: rgba(0, 10, 15, 0.95); border: 1px solid rgba(79, 195, 255, 0.2); align-items: stretch; height: 140px; overflow: hidden; z-index: 50; }
+    #project-next-btn { min-width: 80px; background: rgba(79, 195, 255, 0.08); border: none; border-right: 1px solid rgba(79, 195, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--accent-color); transition: 0.4s; flex-shrink: 0; }
+    #project-next-btn:hover { background: var(--accent-color); color: #000; }
+    .hud-track-container { flex: 1; overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; scrollbar-width: none; }
+    .hud-track-container::-webkit-scrollbar { display: none; }
+    .hud-track { display: flex; gap: 15px; align-items: center; padding: 0 30px; }
+    .hud-card { min-width: 240px; height: 100px; border: 1px solid rgba(255, 255, 255, 0.1); padding: 15px; background: rgba(255, 255, 255, 0.02); transition: 0.4s; display: flex; flex-direction: column; justify-content: center; }
+    .hud-card * { pointer-events: none; }
+    .hud-card .id-tag { font-family: 'Orbitron'; font-size: 0.6rem; opacity: 0.6; margin-bottom: 5px; color: var(--accent-color); }
+    .hud-card .title-tag { font-family: 'Orbitron'; font-size: 0.9rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hud-card:hover { border-color: var(--accent-color); background: rgba(79, 195, 255, 0.1); transform: translateY(-3px); }
+    .hud-card.active { border: 2px solid var(--accent-color); background: rgba(79, 195, 255, 0.15); box-shadow: 0 0 25px rgba(79, 195, 255, 0.2); }
+    .hud-separator { min-width: 120px; height: 100px; display: flex; align-items: center; justify-content: center; position: relative; margin: 0 15px; flex-shrink: 0; }
+    .hud-separator::before { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: var(--extra-color); box-shadow: 0 0 8px var(--extra-color); z-index: 1; }
+    .hud-separator::after { content: attr(data-label); position: relative; z-index: 2; background: #010a0f; padding: 0 12px; font-family: 'Orbitron'; font-size: 0.75rem; color: var(--extra-color); font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 10px var(--extra-color); text-transform: uppercase; }
+    .hud-card.is-extra .id-tag { color: var(--extra-color); }
+    
+    /* ================= ADAPTIVE TERMINAL HUD ================= */
+    .terminal-output { 
+        background: rgba(0, 5, 10, 0.92); 
+        border-left: 5px solid var(--accent-color); 
+        padding: 25px; 
+        font-family: 'Inter', sans-serif; 
+        font-size: 1.1rem; 
+        line-height: 1.6;
+        margin-bottom: 15px; 
+        width: 100%;
+        box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
+    }
+    .skill-label { 
+        font-family: 'Orbitron'; 
+        color: var(--accent-color); 
+        font-size: 0.85rem; 
+        letter-spacing: 2px; 
+        margin-bottom: 10px;
+        display: block;
+    }
+    .cv-btn { display: inline-block; margin-top: 25px; padding: 15px 30px; background: rgba(79, 195, 255, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color); text-decoration: none; font-family: 'Orbitron'; font-size: 0.85rem; letter-spacing: 2px; transition: all 0.3s; }
+    .cv-btn:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 25px var(--accent-color); }
+
+    /* ================= TECH DECK (SKILLS LOGOS) ================= */
+    .tech-deck { 
+        display: flex; gap: 30px; margin-top: 40px; padding: 10px; 
+        background: transparent; border: none;
+        justify-content: space-around; width: 100%;
+        max-width: 1200px;
+    }
+    .tech-item { 
+        width: 80px; height: 80px; display: flex; align-items: center; 
+        justify-content: center; position: relative;
+    }
+    .tech-item img { 
+        max-width: 100%; max-height: 100%; object-fit: contain; 
+        filter: drop-shadow(0 0 5px var(--accent-color)) brightness(0.9);
+        transition: transform 0.4s, filter 0.4s;
+    }
+    .tech-item:hover img { 
+        transform: scale(1.2) translateY(-5px); 
+        filter: drop-shadow(0 0 15px var(--accent-color)) brightness(1.2); 
+    }
+
+    .edu-content { display: flex; align-items: center; gap: 40px; }
+    .vam-logo-container { width: 300px; height: 300px; flex-shrink: 0; display: grid; place-items: center; border: 1px solid rgba(79, 195, 255, 0.15); background: rgba(0,0,0,0.3); padding: 30px; transition: filter 0.8s; }
+    .vam-logo-container img { width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 0 10px var(--accent-color)); }
+
+    @media (max-width: 1100px) { 
+        .display-core { grid-template-columns: 1fr; } 
+        .project-info-hub { display: none; } 
+        .hero-content, .about-content, .edu-content { flex-direction: column; text-align: center; } 
+        .about-selfie-box { width: 200px; height: 200px; }
+        .vam-logo-container { width: 200px; height: 200px; }
+        .tech-deck { flex-wrap: wrap; gap: 20px; }
+        .tech-item { width: 60px; height: 60px; }
+        .vertical-hud-nav { right: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="hud-flash"></div>
+<div id="cursor-container">
+    <div id="cursor-dot"></div>
+    <div id="hud-rotation-wrapper">
+        <div class="hud-bracket" id="b1"></div>
+        <div class="hud-bracket" id="b2"></div>
+        <div class="hud-bracket" id="b3"></div>
+        <div class="hud-bracket" id="b4"></div>
+    </div>
+</div>
+
+<div id="boot">
+    <div class="boot-text" id="bootText"></div>
+    <div class="boot-loader"><div class="boot-bar" id="bootBar"></div></div>
+</div>
+
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div>
+
+<div class="vertical-hud-nav">
+    <div class="nav-arrow" id="navUp">▲</div>
+    <div class="nav-arrow" id="navDown">▼</div>
+</div>
+
+<div class="nav-hot-zone" id="navZone"></div>
+<nav class="nav-frame" id="navFrame">
+  <div class="nav-tab" id="navTab"><span>INDEX</span></div>
+  <div class="index-header-text" style="font-family:Orbitron; margin-bottom:20px; opacity:0; color:var(--accent-color)">INDEX</div>
+  <div class="side-index">
+    <a data-idx="0" class="menu-link">CORE</a>
+    <a data-idx="1" class="menu-link">PROJECTS</a>
+    <a data-idx="2" class="menu-link">SKILLS</a>
+    <a data-idx="3" class="menu-link">EDUCATION</a>
+    <a data-idx="4" class="menu-link">ABOUT ME</a>
+  </div>
+</nav>
+
+<div id="drag-surface" style="position:fixed; inset:0; z-index:5;"></div>
+
+<div id="main-wrapper">
+    <section id="hero">
+        <div class="hero-content">
+            <div class="selfie-wrapper hero-selfie-box">
+                <div class="selfie-container">
+                    <img src="RicardoSelfie.png" alt="Ricardo Santos">
+                    <div class="scan-filter"></div>
+                    <div class="scanline-moving sl-hero"></div>
+                </div>
+            </div>
+            <div class="hero-text">
+                <span class="hero-sub-tag">WELCOME TO MY PORTFOLIO!</span>
+                <h1 id="energy-name">RICARDO SANTOS</h1>
+                <div class="terminal-output" style="max-width: 600px;">
+                    <p id="hero-typing-1"> # Ricardo Albuquerque Santos</p>
+                    <p id="hero-typing-2"> # Game Development - Programming</p>
+                    <p id="hero-typing-3"># portfolio_V1.0_stable</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects">
+        <h2 class="section-title">PROJECTS</h2>
+        <div class="cinema-container">
+            <div class="display-core">
+                <div class="video-wrapper">
+                    <div style="position:absolute; inset:0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(79, 195, 255, 0.03), rgba(0,0,0,0), rgba(79, 195, 255, 0.03)); background-size: 100% 4px, 100% 100%; pointer-events: none; z-index: 2;"></div>
+                    <div id="yt-player"></div>
+                </div>
+                <div class="project-info-hub">
+                    <div class="info-top">
+                        <div class="info-header"><h2 id="p-title">LOADING...</h2></div>
+                        <div class="info-body"><p id="p-desc">Initializing data stream...</p></div>
+                    </div>
+                    <div class="tech-grid">
+                        <div class="tech-tag" id="p-tech">> TECH: ---</div>
+                        <div class="tech-tag" id="p-status">> STATUS: ---</div>
+                        <div class="tech-tag" id="p-role">> ROLE: ---</div>
+                    </div>
+                </div>
+            </div>
+            <div class="selection-hud">
+                <div id="project-next-btn">❯</div>
+                <div class="hud-track-container" id="hud-scroll-area">
+                    <div id="hud-track" class="hud-track"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills">
+        <h2 class="section-title">SKILLS</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; width: 100%;">
+            <div class="terminal-output"><span class="skill-label">[ SOFTWARE ]</span>Unreal Engine 5, Unity, Godot, Git, Jira</div>
+            <div class="terminal-output"><span class="skill-label">[ PROGRAMMING ]</span>C#, GDScript, Blueprints (Unreal)</div>
+            <div class="terminal-output"><span class="skill-label">[ GAME DEVELOPMENT ]</span>Problem Solving | Game Design | Q&A | Team Collaboration</div>
+            <div class="terminal-output"><span class="skill-label">[ LANGUAGES ]</span>Portuguese — Native<br>English — Good Working Proficiency (Wall Street English)</div>
+        </div>
+        
+        <div class="tech-deck">
+            <div class="tech-item"><img src="UELogo.png" alt="Unreal Engine"></div>
+            <div class="tech-item"><img src="UnityLogo.png" alt="Unity"></div>
+            <div class="tech-item"><img src="GodotLogo.png" alt="Godot"></div>
+            <div class="tech-item"><img src="GitLogo.png" alt="Git"></div>
+            <div class="tech-item"><img src="JiraLogo.png" alt="Jira"></div>
+        </div>
+    </section>
+
+    <section id="education">
+      <h2 class="section-title">EDUCATION</h2>
+      <div class="edu-content" style="max-width: 1200px; width: 100%;">
+          <div class="vam-logo-container terminal-output" style="border-left: none; padding: 15px;">
+              <img src="VamLogo.png" alt="VAM Logo">
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+              <div class="terminal-output">
+                  <span class="skill-label">[ BACHELOR'S DEGREE ]</span>
+                  <p style="font-size: 1.4rem; font-weight: 600;">Videogames and Multimedia (VAM)</p>
+                  <p>Lusófona University of Porto (2023 – 2026)</p>
+              </div>
+              <div class="terminal-output">
+                  <span class="skill-label">[ SECONDARY EDUCATION ]</span>
+                  <p style="font-size: 1.2rem; font-weight: 600;">Sciences and Technologies Course</p>
+                  <p>Secondary School of Estarreja (2020 – 2023)</p>
+              </div>
+              <div class="terminal-output">
+                  <span class="skill-label">[ LANGUAGE CERTIFICATION ]</span>
+                  <p style="font-size: 1.2rem; font-weight: 600;">Wall Street English Conclusion Certificate</p>
+                  <p>Wall Street English (2015 – 2022)</p>
+              </div>
+          </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2 class="section-title">ABOUT ME</h2>
+      <div class="about-content" style="width: 100%; max-width: 1400px;">
+          <div class="selfie-wrapper about-selfie-box">
+              <div class="selfie-container">
+                  <img src="RicardoSelfie2.png" alt="Ricardo Santos Portrait">
+                  <div class="scan-filter"></div>
+                  <div class="scanline-moving sl-about"></div>
+              </div>
+          </div>
+          <div class="about-terminal-wrapper" style="flex: 1;">
+              <div class="terminal-output">
+                  <p>I'm a very resilient and passionate youngster who started learning game development and programming since my University journey. I already got some experience in Unreal Engine, Unity, Godot and I have a strong interest in problem-solving, system design, and quality assurance. Comfortable working in multidisciplinary teams and continuously improving technical and creative skills. I have always given everything I had for all aquestes projects, and now I can just hope I am given the chance to do the same outside of the academic world, as this is my real passion and what I was born to do. </p>
+              </div>
+              <div class="terminal-output" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 1rem;">
+                  <p>> EMAIL: ricardogun10@gmail.com</p>
+                  <p>> PHONE: +351 925 296 967</p>
+                  <p>> GITHUB: RicardoSantos05</p>
+                  <p>> LOCATION: Porto, Portugal</p>
+              </div>
+              <a href="CV_Ricardo_Santos.pdf" download class="cv-btn">> DOWNLOAD_CV.EXE</a>
+          </div>
+      </div>
+    </section>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+gsap.registerPlugin(Draggable);
+
+const sections = gsap.utils.toArray("section");
+const dragSurface = document.getElementById("drag-surface");
+let currentProg = 0, verticalDrag, player;
+const sectionColors = ["#4fc3ff", "#bc4fff", "#00ffcc", "#ff9d00", "#ff4f4f"];
+let backgroundState = { color: sectionColors[0] };
+
+const projectData = [
+    { id: "01", title: "Disasterpiece", ytId: "p-iEk12fKVg", tech: "Blueprints (UE5)", status: "In Development", role: "Main Programmer", desc: "(In Development) 3D physics-based cooperative stealth game focused on chaotic gameplay. Responsible for gameplay mechanics, local multiplayer systems, and physics interactions. Project was born since my pitch presentation, where I presented this idea for Disasterpiece, being chosen upon many other good ideas. ", type: "core" },
+    { id: "02", title: "Huddle", ytId: "xc00pYL6FSQ", tech: "Blueprints (UE5)", status: "Complete", role: "Programmer", desc: "3D underwater survival horror game in Unreal Engine 5. Developed underwater player movement, gameplay randomized systems, AI behavior, gameplay loop mechanics and UI flow/progress.", type: "core" },
+    { id: "03", title: "InTempo", ytId: "WYD7B2Je20E", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D rhythm platformer where gameplay reacts to music and sound progression. Implemented movement, rhythm-based mechanics, and environment synchronization (Obstacles/Puzzles). Project saw the light of the day as it was chosen upon many other ideas at the pitch presentation, where I presented the whole core of InTempo", type: "core" },
+    { id: "04", title: "Hurrya", ytId: "LcJSNficHWQ", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D top-down adventure and survival game set in a war scenario. Developed core mechanics, AI detection, sanity system, and exploration gameplay (Randomization). Project made in Unity in two weeks as a project for the subject «Sistemas e Motores» in which we had very specific conditions to make games in a short period of time.", type: "extra" },
+    { id: "05", title: "AV360 Experience", ytId: "GwSYp1urrSI", tech: "Unity / XR", status: "Complete", role: "Programmer", desc: "360 interactive video experience featuring XR Interaction tools from Unity. Spatialized Audio implementation and narrative consequences by the player's own choices.", type: "extra" },
+    { id: "06", title: "Maybe I’m Wrong", ytId: "6f83sdhlhzo", tech: "C# (Unity)", status: "Incomplete", role: "Programmer", desc: "First ever prototype/experience developed as a programmer during my bachelor. As a group we were only asked to have a very «raw» prototype to be easier to explain our project. Despite that, we ended going a litle further to test ourselves using and exploring the programs we were just taught a few weeks prior.", type: "extra" }
+];
+
+let activeProjectIdx = 0;
+
+// YouTube Iframe API Init
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('yt-player', {
+        height: '100%',
+        width: '100%',
+        videoId: projectData[0].ytId,
+        playerVars: {
+            'autoplay': 1,
+            'controls': 1,
+            'rel': 0,
+            'mute': 1,
+            'loop': 1,
+            'playlist': projectData[0].ytId
+        },
+        events: {
+            'onReady': onPlayerReady
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    if (Math.round(currentProg) === 1) event.target.playVideo();
+}
+
+function initHUDCursor() {
+    const container = document.getElementById('cursor-container');
+    const rotWrapper = document.getElementById('hud-rotation-wrapper');
+    const brackets = document.querySelectorAll('.hud-bracket');
+    let mouseX = 0, mouseY = 0, ballX = 0, ballY = 0;
+    window.addEventListener('mousemove', (e) => { 
+        mouseX = e.clientX; mouseY = e.clientY; 
+        const target = e.target.closest("a, .hud-card, .menu-link, #navZone, .nav-tab, #project-next-btn, .cv-btn, #yt-player, .nav-arrow");
+        if (target) gsap.to(brackets, { scale: 0.35, borderColor: "#ffffff", duration: 0.3, overwrite: true });
+        else gsap.to(brackets, { scale: 1, borderColor: backgroundState.color, duration: 0.4, overwrite: true });
+    });
+    gsap.to(rotWrapper, { rotation: 360, duration: 4, repeat: -1, ease: "none" });
+    window.addEventListener('mousedown', () => gsap.to(brackets, { scale: 0.1, borderColor: "#ffffff", duration: 0.05, yoyo: true, repeat: 1 }));
+    gsap.ticker.add(() => {
+        ballX += (mouseX - ballX) * 0.22; ballY += (mouseY - ballY) * 0.22;
+        gsap.set(container, { x: ballX, y: ballY });
+    });
+}
+
+function initNeuralBackground() {
+    const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
+    let particles = [];
+    const worldHeight = window.innerHeight * 5;
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    class Particle {
+        constructor() { this.init(); }
+        init() {
+            this.x = Math.random() * window.innerWidth;
+            this.y = Math.random() * worldHeight;
+            this.vx = (Math.random() - 0.5) * 0.6;
+            this.vy = (Math.random() - 0.5) * 0.6;
+            this.size = Math.random() * 2;
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy;
+            if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
+            if (this.y < 0 || this.y > worldHeight) this.vy *= -1;
+        }
+        draw(offsetY) {
+            const screenY = this.y - offsetY;
+            if (screenY > -150 && screenY < window.innerHeight + 150) {
+                ctx.fillStyle = backgroundState.color;
+                ctx.beginPath(); ctx.arc(this.x, screenY, this.size, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+    }
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const offsetY = currentProg * window.innerHeight;
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update(); particles[i].draw(offsetY);
+            if (i > 250) continue; 
+            for (let j = i + 1; j < 250; j++) {
+                const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 150) {
+                    const y1 = particles[i].y - offsetY, y2 = particles[j].y - offsetY;
+                    if (y1 > -100 && y1 < window.innerHeight + 100) {
+                        ctx.strokeStyle = backgroundState.color; ctx.globalAlpha = 0.25 * (1 - dist/150); ctx.lineWidth = 0.8;
+                        ctx.beginPath(); ctx.moveTo(particles[i].x, y1); ctx.lineTo(particles[j].x, y2); ctx.stroke(); ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+    resize(); window.addEventListener('resize', resize);
+    for (let i = 0; i < 500; i++) particles.push(new Particle());
+    animate();
+}
+
+function triggerEnergyPulse(parent) {
+    const chars = parent.querySelectorAll(".pulse-char");
+    if (!chars.length) return;
+    gsap.killTweensOf(chars);
+    gsap.timeline()
+        .to(chars, { duration: 0.05, color: "#fff", textShadow: `0 0 20px currentColor, 0 0 40px #fff`, stagger: 0.02 })
+        .to(chars, { duration: 0.4, color: "inherit", textShadow: `0 0 10px currentColor`, stagger: 0.02 }, "-=0.2");
+}
+
+function scrambleEffect(element, customText = null, isTitle = false) {
+    if (!element) return;
+    gsap.killTweensOf(element);
+    const finalStr = customText || element.getAttribute('data-final-text') || element.innerText;
+    element.setAttribute('data-final-text', finalStr);
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    if (element.id === "energy-name" || (isTitle && finalStr.includes("ABOUT ME"))) {
+        const targetBox = element.id === "energy-name" ? ".hero-selfie-box" : ".about-selfie-box";
+        const targetSl = element.id === "energy-name" ? ".sl-hero" : ".sl-about";
+        gsap.to(targetBox, { opacity: 1, x: 0, duration: 1.5, ease: "power4.out", overwrite: true });
+        gsap.to(targetSl, { top: "110%", duration: 1.5, ease: "none", repeat: -1, repeatDelay: 3 });
+    }
+    let obj = { val: 0 };
+    gsap.to(obj, {
+        val: finalStr.length,
+        duration: 0.6,
+        ease: "power1.inOut",
+        onUpdate: () => {
+            let currentIdx = Math.floor(obj.val);
+            let result = "";
+            for(let i=0; i<finalStr.length; i++) {
+                if(i < currentIdx) result += finalStr[i];
+                else result += chars[Math.floor(Math.random() * chars.length)];
+            }
+            element.innerText = result;
+        },
+        onComplete: () => {
+            if (isTitle) {
+                element.innerHTML = finalStr.split('').map(c => `<span class="pulse-char">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+                triggerEnergyPulse(element);
+            } else { element.innerText = finalStr; }
+        }
+    });
+}
+
+function startPeriodicPulse() {
+    gsap.delayedCall(7, function pulseLoop() {
+        const title = document.getElementById('energy-name');
+        if (title && !gsap.isTweening(title)) triggerEnergyPulse(title);
+        gsap.delayedCall(7, pulseLoop);
+    });
+}
+
+function animateSectionHUD(idx, direction = "in") {
+    const section = sections[idx];
+    if (!section) return;
+    const targets = section.querySelectorAll('.section-title, .terminal-output, .cinema-container, .display-core, .tech-grid, .about-content, .edu-content, .tech-deck, .hero-sub-tag');
+    if (direction === "in") {
+        gsap.fromTo("#hud-flash", { opacity: 0.8 }, { opacity: 0, duration: 0.5 });
+        gsap.fromTo(targets, { opacity: 0, y: 100, skewX: 30, filter: "blur(20px)" }, { 
+            opacity: 1, y: 0, skewX: 0, filter: "blur(0px)", 
+            duration: 0.8, stagger: 0.08, ease: "expo.out", overwrite: true
+        });
+    } else { gsap.to(targets, { opacity: 0, y: -100, skewX: -15, filter: "blur(10px)", duration: 0.4, overwrite: true }); }
+}
+
+function updateGavetas(p) {
+    const oldIdx = Math.round(currentProg);
+    p = gsap.utils.clamp(0, sections.length - 1, p);
+    const newIdx = Math.round(p);
+    currentProg = p; 
+    const activeColor = sectionColors[newIdx];
+    gsap.to(backgroundState, { color: activeColor, duration: 0.8 });
+    
+    gsap.to([".section-title", "#energy-name", ".skill-label", ".index-header-text", "#project-next-btn", ".nav-tab", ".cv-btn", ".scan-filter", ".scanline-moving", ".vam-logo-container", ".hero-sub-tag", ".nav-arrow"], { color: activeColor, borderColor: activeColor, duration: 0.8, overwrite: "auto" });
+    gsap.to(".hud-bracket", { borderColor: activeColor, duration: 0.8, overwrite: "auto" });
+    gsap.to(".tech-item img", { filter: `drop-shadow(0 0 8px ${activeColor}) brightness(0.9)`, duration: 0.8 });
+
+    document.getElementById('navUp').classList.toggle('disabled', newIdx === 0);
+    document.getElementById('navDown').classList.toggle('disabled', newIdx === sections.length - 1);
+
+    if (player && player.getPlayerState) {
+        if (newIdx === 1) player.playVideo();
+        else player.pauseVideo();
+    }
+
+    if (newIdx !== oldIdx) {
+        animateSectionHUD(oldIdx, "out");
+        animateSectionHUD(newIdx, "in");
+        const title = sections[newIdx].querySelector('.section-title');
+        if (title) scrambleEffect(title, null, true);
+    }
+
+    sections.forEach((section, i) => {
+        let diff = p - i;
+        const absDiff = Math.abs(diff);
+        if (i === newIdx) gsap.set(section, { filter: "none", opacity: 1, yPercent: diff * 0 });
+        if (i === 0) gsap.set(section.querySelector('.hero-content'), { y: -diff * 100, opacity: 1 - absDiff, filter: absDiff > 0.01 ? `blur(${absDiff * 10}px)` : "none" });
+        if (diff > 0) gsap.set(section, { yPercent: -diff * 100, opacity: 1 - (diff * 0.7), filter: diff > 0.01 ? `brightness(${1 - (diff * 0.8)}) blur(${diff * 10}px)` : "none", zIndex: i });
+        else { gsap.set(section, { yPercent: (i - p) * 100, opacity: 1, filter: "none", zIndex: 100 + i }); }
+    });
+    document.querySelectorAll('.menu-link').forEach((a, i) => a.classList.toggle('active', i === newIdx));
+}
+
+function selectProject(idx) {
+    activeProjectIdx = idx;
+    const p = projectData[idx];
+    const cards = document.querySelectorAll('.hud-card');
+    cards.forEach((c, i) => c.classList.toggle('active', i === idx));
+    const titleEl = document.getElementById('p-title');
+    const themeColor = p.type === 'extra' ? '#bc4fff' : '#4fc3ff';
+    
+    gsap.to([".project-info-hub", "#yt-player"], { opacity: 0, x: -10, duration: 0.2, onComplete: () => {
+        if (player && player.loadVideoById) {
+            player.loadVideoById({
+                videoId: p.ytId,
+                suggestedQuality: 'hd720'
+            });
+        }
+        titleEl.innerText = p.title.toUpperCase();
+        document.getElementById('p-desc').innerText = p.desc;
+        document.getElementById('p-tech').innerText = `> TECH: ${p.tech}`;
+        document.getElementById('p-status').innerText = `> STATUS: ${p.status.toUpperCase()}`;
+        document.getElementById('p-role').innerText = `> ROLE: ${p.role.toUpperCase()}`;
+        titleEl.style.color = themeColor;
+        titleEl.style.borderBottomColor = themeColor;
+        scrambleEffect(titleEl, null, true);
+        gsap.to([".project-info-hub", "#yt-player"], { opacity: 1, x: 0, duration: 0.4 });
+    }});
+    const scrollArea = document.getElementById('hud-scroll-area');
+    const activeCard = cards[idx];
+    if(activeCard) gsap.to(scrollArea, { scrollLeft: activeCard.offsetLeft - scrollArea.offsetWidth / 2 + activeCard.offsetWidth / 2, duration: 0.6 }); 
+}
+
+function initEngine() {
+    const track = document.getElementById('hud-track');
+    track.innerHTML = "";
+    projectData.forEach((p, i) => {
+        if (i === 3) {
+            const sep = document.createElement('div');
+            sep.className = 'hud-separator'; sep.setAttribute('data-label', 'Extras');
+            track.appendChild(sep);
+        }
+        const card = document.createElement('div');
+        card.className = `hud-card ${p.type === 'extra' ? 'is-extra' : ''}`;
+        card.innerHTML = `<span class="id-tag">#0${i+1}</span><span class="title-tag">${p.title}</span>`;
+        card.addEventListener('click', (e) => { e.stopPropagation(); selectProject(i); }); 
+        track.appendChild(card);
+    });
+    document.getElementById('project-next-btn').addEventListener('click', (e) => { e.stopPropagation(); selectProject((activeProjectIdx + 1) % projectData.length); });
+    document.getElementById('navUp').addEventListener('click', () => animateToIdx(Math.max(0, Math.round(currentProg) - 1)));
+    document.getElementById('navDown').addEventListener('click', () => animateToIdx(Math.min(sections.length - 1, Math.round(currentProg) + 1)));
+
+    animateSectionHUD(0, "in");
+    selectProject(0);
+    scrambleEffect(document.getElementById('energy-name'), "RICARDO SANTOS", true);
+    updateGavetas(0);
+    startPeriodicPulse(); 
+    gsap.set("#main-wrapper", { visibility: "visible", opacity: 1 });
+    verticalDrag = Draggable.create(dragSurface, { type: "y", trigger: "body", onDrag: () => updateGavetas(-verticalDrag.y / (window.innerHeight / 1.5)), onDragEnd: () => animateToIdx(Math.round(currentProg)) })[0];
+    window.addEventListener("wheel", (e) => animateToIdx(gsap.utils.clamp(0, sections.length - 1, Math.round(currentProg) + (e.deltaY > 0 ? 1 : -1))), { passive: true });
+    
+    gsap.to(".tech-item", {
+        y: -10, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut",
+        stagger: { each: 0.2, from: "center" }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX - window.innerWidth / 2) / 50;
+        const y = (e.clientY - window.innerHeight / 2) / 50;
+        gsap.to("#energy-name", { x: x, y: y, duration: 0.5, ease: "power2.out" });
+        gsap.to(".hero-sub-tag", { x: -x*1.5, y: -y*1.5, duration: 0.7, ease: "power2.out" });
+    });
+}
+
+function animateToIdx(idx) { 
+    sections.forEach(s => gsap.set(s, { clearProps: "filter" }));
+    gsap.to(dragSurface, { y: -idx * (window.innerHeight / 1.5), duration: 0.8, onUpdate: () => { if(verticalDrag) verticalDrag.update(); updateGavetas(-verticalDrag.y / (window.innerHeight / 1.5)); } }); 
+}
+
+window.onload = () => {
+    initHUDCursor();
+    const t = document.getElementById("bootText"), 
+          bar = document.getElementById("bootBar"),
+          lines = [
+            ">> RSYSTEM KERNEL v2.0.26",
+            ">> INITIALIZING ENGINE CORE...",
+            ">> PARSING PROJECT MANIFEST...",
+            ">> VERIFYING SOURCE CONTROL (GIT)...",
+            ">> REBUILDING SCRIPT ASSEMBLIES...",
+            ">> LOADING ASSETS FROM DISK...",
+            ">> COMPILING GLOBAL SHADERS...",
+            ">> R-SYSTEM INTERFACE: ONLINE"
+          ];
+    
+    let l = 0, c = 0;
+    function type() {
+        if (l < lines.length) { 
+            if (c < lines[l].length) { 
+                t.innerHTML += lines[l].charAt(c++); 
+                setTimeout(type, 15); 
+            } else { 
+                t.innerHTML += "<br>"; 
+                l++; c = 0; 
+                const progress = (l / lines.length) * 100;
+                gsap.to(bar, { width: progress + "%", duration: 0.2 });
+                setTimeout(type, 80); 
+                t.scrollTop = t.scrollHeight;
+            } 
+        } else { 
+            setTimeout(() => {
+                gsap.to("#boot", { opacity: 0, duration: 0.8, ease: "power4.inOut", onComplete: () => { 
+                    document.getElementById("boot").style.display = "none"; 
+                    initNeuralBackground(); 
+                    initEngine(); 
+                }});
+            }, 600); 
+        }
+    }
+    type();
+};
+
+const navFrame = document.getElementById('navFrame'), indexHeader = document.querySelector('.index-header-text'), menuLinks = document.querySelectorAll('.menu-link'), navZone = document.getElementById('navZone');
+navZone.addEventListener('mouseenter', () => {
+    gsap.to(navFrame, { x: 0, duration: 0.5, ease: "power3.out" });
+    gsap.to(indexHeader, { opacity: 1, duration: 0.3, delay: 0.2 });
+    gsap.to(menuLinks, { x: 0, opacity: 0.6, duration: 0.4, stagger: 0.05, ease: "back.out(1.7)", delay: 0.1 });
+});
+navFrame.addEventListener('mouseleave', () => {
+    gsap.to(menuLinks, { x: -20, opacity: 0, duration: 0.3, stagger: { each: 0.03, from: "end" }, ease: "power2.in" });
+    gsap.to(navFrame, { x: "-100%", duration: 0.5, ease: "power3.in", delay: 0.2 });
+    gsap.to(indexHeader, { opacity: 0, duration: 0.2 });
+});
+document.querySelectorAll('.menu-link').forEach(link => link.addEventListener('click', (e) => { e.stopPropagation(); animateToIdx(parseInt(link.dataset.idx)); }));
+</script>
+</body>
+</html>
