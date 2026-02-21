@@ -243,6 +243,14 @@
     .vam-logo-container { width: 300px; height: 300px; flex-shrink: 0; display: grid; place-items: center; border: 1px solid rgba(79, 195, 255, 0.15); background: rgba(0,0,0,0.3); padding: 30px; transition: filter 0.8s; }
     .vam-logo-container img { width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 0 10px var(--accent-color)); }
 
+    #energy-name {
+    color: var(--accent-color) !important;
+    text-shadow: 
+        0 0 10px var(--accent-color),
+        0 0 25px var(--accent-color),
+        0 0 45px rgba(79,195,255,0.6);
+    
+    }
     /* ================= MOBILE OPTIMIZATIONS FIXED ================= */
     @media (max-width: 1100px) { 
         *, *::before, *::after { cursor: auto !important; }
@@ -557,11 +565,11 @@ function initNeuralBackground() {
             if (i > (isMobile ? 50 : 250)) continue; 
             for (let j = i + 1; j < (isMobile ? 50 : 250); j++) {
                 const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 100) {
+                if (dist < 115) {
                     const y1 = isMobile ? particles[i].y - window.scrollY : particles[i].y - offsetY;
                     const y2 = isMobile ? particles[j].y - window.scrollY : particles[j].y - offsetY;
                     if (y1 > -100 && y1 < window.innerHeight + 100) {
-                        ctx.strokeStyle = backgroundState.color; ctx.globalAlpha = 0.2 * (1 - dist/100); ctx.lineWidth = 0.5;
+                        ctx.strokeStyle = backgroundState.color; ctx.globalAlpha = 0.75 * (1 - dist/115); ctx.lineWidth = 0.5;
                         ctx.beginPath(); ctx.moveTo(particles[i].x, y1); ctx.lineTo(particles[j].x, y2); ctx.stroke(); ctx.globalAlpha = 1.0;
                     }
                 }
@@ -675,8 +683,23 @@ function updateGavetas(p) {
     
     gsap.to(backgroundState, { color: activeColor, duration: 0.8 });
     
-    gsap.to([".section-title", "#energy-name", ".skill-label", ".index-header-text", "#project-next-btn", ".nav-tab", ".cv-btn", ".scan-filter", ".scanline-moving", ".vam-logo-container", ".hero-sub-tag", ".nav-arrow"], { 
-        color: activeColor, borderColor: activeColor, duration: 0.8, overwrite: "auto" 
+    gsap.to([
+    ".section-title",
+    ".skill-label",
+    ".index-header-text",
+    "#project-next-btn",
+    ".nav-tab",
+    ".cv-btn",
+    ".scan-filter",
+    ".scanline-moving",
+    ".vam-logo-container",
+    ".hero-sub-tag",
+    ".nav-arrow"
+    ], { 
+    color: activeColor,
+    borderColor: activeColor,
+    duration: 0.8,
+    overwrite: "auto" 
     });
     gsap.to(".hud-bracket", { borderColor: activeColor, duration: 0.8, overwrite: "auto" });
     gsap.to(".tech-item img", { filter: `drop-shadow(0 0 8px ${activeColor}) brightness(0.9)`, duration: 0.8 });
@@ -849,15 +872,15 @@ window.onload = () => {
         if (l < lines.length) { 
             if (c < lines[l].length) { 
                 t.innerHTML += lines[l].charAt(c++); 
-                setTimeout(type, isMobile ? 5 : 15); 
+                setTimeout(type, 5); 
             } else { 
                 t.innerHTML += "<br>"; 
                 l++; c = 0; 
                 const progress = (l / lines.length) * 100;
                 gsap.to(bar, { width: progress + "%", duration: 0.2 });
-                setTimeout(type, isMobile ? 30 : 80); 
+                setTimeout(type, 30); 
                 t.scrollTop = t.scrollHeight;
-            } 
+            }
         } else { 
             setTimeout(() => {
                 gsap.to("#boot", { opacity: 0, duration: 0.8, ease: "power4.inOut", onComplete: () => { 
@@ -899,6 +922,91 @@ document.querySelectorAll('.menu-link').forEach(link => link.addEventListener('c
     animateToIdx(parseInt(link.dataset.idx)); 
     if (isMobile) toggleMenu(false);
 }));
+
+const navFrameEl = document.getElementById("navFrame");
+const navTabEl = document.getElementById("navTab");
+const navZoneEl = document.getElementById("navZone");
+
+let navOpen = false;
+
+function openNav() {
+    navOpen = true;
+    gsap.to(navFrameEl, {
+        x: 0,
+        duration: 0.4,
+        ease: "power3.out"
+    });
+
+    gsap.to(".menu-link", {
+        opacity: 1,
+        x: 0,
+        stagger: 0.05,
+        duration: 0.3,
+        delay: 0.1
+    });
+
+    gsap.to(".index-header-text", {
+        opacity: 1,
+        duration: 0.3
+    });
+}
+
+function closeNav() {
+    navOpen = false;
+
+    gsap.to(navFrameEl, {
+        x: "-100%",
+        duration: 0.4,
+        ease: "power3.in"
+    });
+
+    gsap.to(".menu-link", {
+        opacity: 0,
+        x: -20,
+        duration: 0.2
+    });
+
+    gsap.to(".index-header-text", {
+        opacity: 0,
+        duration: 0.2
+    });
+}
+
+/* TOQUE NO BOTÃO INDEX */
+navTabEl.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (navOpen) closeNav();
+    else openNav();
+}, { passive: false });
+
+
+/* ZONA DA ESQUERDA (DESLIZAR) */
+navZoneEl.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    openNav();
+}, { passive: false });
+
+
+if (isMobile) {
+
+    navTabEl.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (navOpen) closeNav();
+        else openNav();
+
+    }, { passive: false });
+
+
+    navZoneEl.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        openNav();
+    }, { passive: false });
+
+}
 </script>
 </body>
 </html>
