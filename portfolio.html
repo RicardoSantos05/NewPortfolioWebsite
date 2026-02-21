@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>R-SYSTEM | Ricardo Santos</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -25,6 +25,7 @@
         background: var(--bg-dark); color: #eaf6ff; 
         font-family: 'Inter', sans-serif; overflow: hidden;
         height: 100%; width: 100%;
+        touch-action: none; /* Necessário para o Draggable em mobile */
     }
 
     #hud-flash {
@@ -231,15 +232,40 @@
     .vam-logo-container { width: 300px; height: 300px; flex-shrink: 0; display: grid; place-items: center; border: 1px solid rgba(79, 195, 255, 0.15); background: rgba(0,0,0,0.3); padding: 30px; transition: filter 0.8s; }
     .vam-logo-container img { width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 0 10px var(--accent-color)); }
 
+    /* ================= MOBILE OPTIMIZATIONS ================= */
     @media (max-width: 1100px) { 
-        .display-core { grid-template-columns: 1fr; } 
-        .project-info-hub { display: none; } 
-        .hero-content, .about-content, .edu-content { flex-direction: column; text-align: center; } 
-        .about-selfie-box { width: 200px; height: 200px; }
-        .vam-logo-container { width: 200px; height: 200px; }
-        .tech-deck { flex-wrap: wrap; gap: 20px; }
-        .tech-item { width: 60px; height: 60px; }
-        .vertical-hud-nav { right: 10px; }
+        *, *::before, *::after { cursor: auto !important; }
+        #cursor-container { display: none; }
+        
+        section { padding: 80px 20px 20px 20px; overflow-y: auto; display: block; }
+        #main-wrapper { overflow: hidden; }
+
+        .display-core { grid-template-columns: 1fr; display: flex; flex-direction: column; gap: 10px; } 
+        .project-info-hub { display: flex; padding: 15px; margin-top: 10px; height: auto; border-left: 2px solid var(--accent-color); } 
+        .info-header h2 { font-size: 1.1rem; }
+        .info-body p { font-size: 0.8rem; }
+        .tech-grid { grid-template-columns: 1fr 1fr; }
+        
+        .cinema-container { height: auto; padding-top: 20px; }
+        .selection-hud { height: 100px; margin-top: 15px; }
+        .hud-card { min-width: 160px; height: 70px; padding: 10px; }
+        .hud-card .title-tag { font-size: 0.7rem; }
+        #project-next-btn { min-width: 50px; font-size: 1.5rem; }
+
+        .hero-content, .about-content, .edu-content { flex-direction: column; text-align: center; gap: 30px; } 
+        .hero-selfie-box { width: 140px; height: 140px; margin: 0 auto; }
+        .about-selfie-box { width: 180px; height: 180px; margin: 0 auto; }
+        .vam-logo-container { width: 150px; height: 150px; margin: 0 auto; }
+        
+        #energy-name { font-size: 2.5rem; }
+        .tech-deck { display: grid; grid-template-columns: repeat(3, 1fr); place-items: center; gap: 20px; }
+        .tech-item { width: 50px; height: 50px; }
+        
+        .vertical-hud-nav { right: 10px; gap: 10px; }
+        .nav-arrow { width: 35px; height: 35px; font-size: 0.9rem; }
+        
+        #skills > div { grid-template-columns: 1fr !important; }
+        .terminal-output { padding: 15px; font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -297,7 +323,7 @@
             <div class="hero-text">
                 <span class="hero-sub-tag">WELCOME TO MY PORTFOLIO!</span>
                 <h1 id="energy-name">RICARDO SANTOS</h1>
-                <div class="terminal-output" style="max-width: 600px;">
+                <div class="terminal-output" style="max-width: 600px; margin: 0 auto;">
                     <p id="hero-typing-1"> # Ricardo Albuquerque Santos</p>
                     <p id="hero-typing-2"> # Game Development - Programming</p>
                     <p id="hero-typing-3"># portfolio_V1.0_stable</p>
@@ -337,14 +363,14 @@
 
     <section id="skills">
         <h2 class="section-title">SKILLS</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; width: 100%;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; width: 100%; margin: 0 auto;">
             <div class="terminal-output"><span class="skill-label">[ SOFTWARE ]</span>Unreal Engine 5, Unity, Godot, Git, Jira</div>
             <div class="terminal-output"><span class="skill-label">[ PROGRAMMING ]</span>C#, GDScript, Blueprints (Unreal)</div>
             <div class="terminal-output"><span class="skill-label">[ GAME DEVELOPMENT ]</span>Problem Solving | Game Design | Q&A | Team Collaboration</div>
             <div class="terminal-output"><span class="skill-label">[ LANGUAGES ]</span>Portuguese — Native<br>English — Good Working Proficiency (Wall Street English)</div>
         </div>
         
-        <div class="tech-deck">
+        <div class="tech-deck" style="margin: 40px auto 0 auto;">
             <div class="tech-item"><img src="UELogo.png" alt="Unreal Engine"></div>
             <div class="tech-item"><img src="UnityLogo.png" alt="Unity"></div>
             <div class="tech-item"><img src="GodotLogo.png" alt="Godot"></div>
@@ -355,7 +381,7 @@
 
     <section id="education">
       <h2 class="section-title">EDUCATION</h2>
-      <div class="edu-content" style="max-width: 1200px; width: 100%;">
+      <div class="edu-content" style="max-width: 1200px; width: 100%; margin: 0 auto;">
           <div class="vam-logo-container terminal-output" style="border-left: none; padding: 15px;">
               <img src="VamLogo.png" alt="VAM Logo">
           </div>
@@ -381,7 +407,7 @@
 
     <section id="contact">
       <h2 class="section-title">ABOUT ME</h2>
-      <div class="about-content" style="width: 100%; max-width: 1400px;">
+      <div class="about-content" style="width: 100%; max-width: 1400px; margin: 0 auto;">
           <div class="selfie-wrapper about-selfie-box">
               <div class="selfie-container">
                   <img src="RicardoSelfie2.png" alt="Ricardo Santos Portrait">
@@ -409,6 +435,8 @@
 <script>
 gsap.registerPlugin(Draggable);
 
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1100;
+
 const sections = gsap.utils.toArray("section");
 const dragSurface = document.getElementById("drag-surface");
 let currentProg = 0, verticalDrag, player;
@@ -426,7 +454,6 @@ const projectData = [
 
 let activeProjectIdx = 0;
 
-// YouTube Iframe API Init
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('yt-player', {
         height: '100%',
@@ -451,6 +478,7 @@ function onPlayerReady(event) {
 }
 
 function initHUDCursor() {
+    if (isMobile) return;
     const container = document.getElementById('cursor-container');
     const rotWrapper = document.getElementById('hud-rotation-wrapper');
     const brackets = document.querySelectorAll('.hud-bracket');
@@ -501,8 +529,8 @@ function initNeuralBackground() {
         const offsetY = currentProg * window.innerHeight;
         for (let i = 0; i < particles.length; i++) {
             particles[i].update(); particles[i].draw(offsetY);
-            if (i > 250) continue; 
-            for (let j = i + 1; j < 250; j++) {
+            if (i > (isMobile ? 100 : 250)) continue; 
+            for (let j = i + 1; j < (isMobile ? 100 : 250); j++) {
                 const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 150) {
                     const y1 = particles[i].y - offsetY, y2 = particles[j].y - offsetY;
@@ -516,7 +544,7 @@ function initNeuralBackground() {
         requestAnimationFrame(animate);
     }
     resize(); window.addEventListener('resize', resize);
-    for (let i = 0; i < 500; i++) particles.push(new Particle());
+    for (let i = 0; i < (isMobile ? 150 : 500); i++) particles.push(new Particle());
     animate();
 }
 
@@ -578,11 +606,11 @@ function animateSectionHUD(idx, direction = "in") {
     const targets = section.querySelectorAll('.section-title, .terminal-output, .cinema-container, .display-core, .tech-grid, .about-content, .edu-content, .tech-deck, .hero-sub-tag');
     if (direction === "in") {
         gsap.fromTo("#hud-flash", { opacity: 0.8 }, { opacity: 0, duration: 0.5 });
-        gsap.fromTo(targets, { opacity: 0, y: 100, skewX: 30, filter: "blur(20px)" }, { 
+        gsap.fromTo(targets, { opacity: 0, y: isMobile ? 30 : 100, skewX: isMobile ? 0 : 30, filter: "blur(20px)" }, { 
             opacity: 1, y: 0, skewX: 0, filter: "blur(0px)", 
             duration: 0.8, stagger: 0.08, ease: "expo.out", overwrite: true
         });
-    } else { gsap.to(targets, { opacity: 0, y: -100, skewX: -15, filter: "blur(10px)", duration: 0.4, overwrite: true }); }
+    } else { gsap.to(targets, { opacity: 0, y: isMobile ? -30 : -100, skewX: isMobile ? 0 : -15, filter: "blur(10px)", duration: 0.4, overwrite: true }); }
 }
 
 function updateGavetas(p) {
@@ -631,7 +659,7 @@ function selectProject(idx) {
     const titleEl = document.getElementById('p-title');
     const themeColor = p.type === 'extra' ? '#bc4fff' : '#4fc3ff';
     
-    gsap.to([".project-info-hub", "#yt-player"], { opacity: 0, x: -10, duration: 0.2, onComplete: () => {
+    gsap.to([".project-info-hub", "#yt-player"], { opacity: 0, x: isMobile ? 0 : -10, y: isMobile ? 10 : 0, duration: 0.2, onComplete: () => {
         if (player && player.loadVideoById) {
             player.loadVideoById({
                 videoId: p.ytId,
@@ -646,7 +674,7 @@ function selectProject(idx) {
         titleEl.style.color = themeColor;
         titleEl.style.borderBottomColor = themeColor;
         scrambleEffect(titleEl, null, true);
-        gsap.to([".project-info-hub", "#yt-player"], { opacity: 1, x: 0, duration: 0.4 });
+        gsap.to([".project-info-hub", "#yt-player"], { opacity: 1, x: 0, y: 0, duration: 0.4 });
     }});
     const scrollArea = document.getElementById('hud-scroll-area');
     const activeCard = cards[idx];
@@ -678,7 +706,16 @@ function initEngine() {
     updateGavetas(0);
     startPeriodicPulse(); 
     gsap.set("#main-wrapper", { visibility: "visible", opacity: 1 });
-    verticalDrag = Draggable.create(dragSurface, { type: "y", trigger: "body", onDrag: () => updateGavetas(-verticalDrag.y / (window.innerHeight / 1.5)), onDragEnd: () => animateToIdx(Math.round(currentProg)) })[0];
+    
+    // Ajuste de sensibilidade Draggable para Mobile
+    verticalDrag = Draggable.create(dragSurface, { 
+        type: "y", 
+        trigger: "body", 
+        dragResistance: isMobile ? 0.2 : 0.5,
+        onDrag: () => updateGavetas(-verticalDrag.y / (window.innerHeight / (isMobile ? 1.1 : 1.5))), 
+        onDragEnd: () => animateToIdx(Math.round(currentProg)) 
+    })[0];
+
     window.addEventListener("wheel", (e) => animateToIdx(gsap.utils.clamp(0, sections.length - 1, Math.round(currentProg) + (e.deltaY > 0 ? 1 : -1))), { passive: true });
     
     gsap.to(".tech-item", {
@@ -686,17 +723,20 @@ function initEngine() {
         stagger: { each: 0.2, from: "center" }
     });
 
-    document.addEventListener('mousemove', (e) => {
-        const x = (e.clientX - window.innerWidth / 2) / 50;
-        const y = (e.clientY - window.innerHeight / 2) / 50;
-        gsap.to("#energy-name", { x: x, y: y, duration: 0.5, ease: "power2.out" });
-        gsap.to(".hero-sub-tag", { x: -x*1.5, y: -y*1.5, duration: 0.7, ease: "power2.out" });
-    });
+    if (!isMobile) {
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX - window.innerWidth / 2) / 50;
+            const y = (e.clientY - window.innerHeight / 2) / 50;
+            gsap.to("#energy-name", { x: x, y: y, duration: 0.5, ease: "power2.out" });
+            gsap.to(".hero-sub-tag", { x: -x*1.5, y: -y*1.5, duration: 0.7, ease: "power2.out" });
+        });
+    }
 }
 
 function animateToIdx(idx) { 
     sections.forEach(s => gsap.set(s, { clearProps: "filter" }));
-    gsap.to(dragSurface, { y: -idx * (window.innerHeight / 1.5), duration: 0.8, onUpdate: () => { if(verticalDrag) verticalDrag.update(); updateGavetas(-verticalDrag.y / (window.innerHeight / 1.5)); } }); 
+    const targetY = -idx * (window.innerHeight / (isMobile ? 1.1 : 1.5));
+    gsap.to(dragSurface, { y: targetY, duration: 0.8, onUpdate: () => { if(verticalDrag) verticalDrag.update(); updateGavetas(-verticalDrag.y / (window.innerHeight / (isMobile ? 1.1 : 1.5))); } }); 
 }
 
 window.onload = () => {
@@ -719,13 +759,13 @@ window.onload = () => {
         if (l < lines.length) { 
             if (c < lines[l].length) { 
                 t.innerHTML += lines[l].charAt(c++); 
-                setTimeout(type, 15); 
+                setTimeout(type, isMobile ? 5 : 15); 
             } else { 
                 t.innerHTML += "<br>"; 
                 l++; c = 0; 
                 const progress = (l / lines.length) * 100;
                 gsap.to(bar, { width: progress + "%", duration: 0.2 });
-                setTimeout(type, 80); 
+                setTimeout(type, isMobile ? 30 : 80); 
                 t.scrollTop = t.scrollHeight;
             } 
         } else { 
@@ -742,17 +782,33 @@ window.onload = () => {
 };
 
 const navFrame = document.getElementById('navFrame'), indexHeader = document.querySelector('.index-header-text'), menuLinks = document.querySelectorAll('.menu-link'), navZone = document.getElementById('navZone');
-navZone.addEventListener('mouseenter', () => {
-    gsap.to(navFrame, { x: 0, duration: 0.5, ease: "power3.out" });
-    gsap.to(indexHeader, { opacity: 1, duration: 0.3, delay: 0.2 });
-    gsap.to(menuLinks, { x: 0, opacity: 0.6, duration: 0.4, stagger: 0.05, ease: "back.out(1.7)", delay: 0.1 });
+
+const toggleMenu = (open) => {
+    if (open) {
+        gsap.to(navFrame, { x: 0, duration: 0.5, ease: "power3.out" });
+        gsap.to(indexHeader, { opacity: 1, duration: 0.3, delay: 0.2 });
+        gsap.to(menuLinks, { x: 0, opacity: 0.6, duration: 0.4, stagger: 0.05, ease: "back.out(1.7)", delay: 0.1 });
+    } else {
+        gsap.to(menuLinks, { x: -20, opacity: 0, duration: 0.3, stagger: { each: 0.03, from: "end" }, ease: "power2.in" });
+        gsap.to(navFrame, { x: "-100%", duration: 0.5, ease: "power3.in", delay: 0.2 });
+        gsap.to(indexHeader, { opacity: 0, duration: 0.2 });
+    }
+};
+
+navZone.addEventListener('mouseenter', () => !isMobile && toggleMenu(true));
+navFrame.addEventListener('mouseleave', () => !isMobile && toggleMenu(false));
+// Suporte para Click/Touch no INDEX em Mobile
+document.getElementById('navTab').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = navFrame.style.transform === "translateX(0px)";
+    toggleMenu(!isOpen);
 });
-navFrame.addEventListener('mouseleave', () => {
-    gsap.to(menuLinks, { x: -20, opacity: 0, duration: 0.3, stagger: { each: 0.03, from: "end" }, ease: "power2.in" });
-    gsap.to(navFrame, { x: "-100%", duration: 0.5, ease: "power3.in", delay: 0.2 });
-    gsap.to(indexHeader, { opacity: 0, duration: 0.2 });
-});
-document.querySelectorAll('.menu-link').forEach(link => link.addEventListener('click', (e) => { e.stopPropagation(); animateToIdx(parseInt(link.dataset.idx)); }));
+
+document.querySelectorAll('.menu-link').forEach(link => link.addEventListener('click', (e) => { 
+    e.stopPropagation(); 
+    animateToIdx(parseInt(link.dataset.idx)); 
+    if (isMobile) toggleMenu(false);
+}));
 </script>
 </body>
 </html>
