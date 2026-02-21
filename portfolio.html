@@ -749,14 +749,13 @@ function selectProject(idx) {
                 suggestedQuality: 'hd720'
             });
         }
-        titleEl.innerText = p.title.toUpperCase();
         document.getElementById('p-desc').innerText = p.desc;
         document.getElementById('p-tech').innerText = `> TECH: ${p.tech}`;
         document.getElementById('p-status').innerText = `> STATUS: ${p.status.toUpperCase()}`;
         document.getElementById('p-role').innerText = `> ROLE: ${p.role.toUpperCase()}`;
         titleEl.style.color = themeColor;
         titleEl.style.borderBottomColor = themeColor;
-        scrambleEffect(titleEl, null, true);
+        scrambleEffect(titleEl, p.title.toUpperCase(), true);
         gsap.to([".project-info-hub", "#yt-player"], { opacity: 1, x: 0, y: 0, duration: 0.4 });
     }});
     const scrollArea = document.getElementById('hud-scroll-area');
@@ -790,14 +789,18 @@ function initEngine() {
         document.getElementById('main-wrapper').style.visibility = "visible";
         document.getElementById('main-wrapper').style.opacity = "1";
 
-        sections.forEach((sec, i) => {
-            ScrollTrigger.create({
-                trigger: sec,
-                start: "top center",
-                end: "bottom center",
-                onEnter: () => updateGavetas(i),
-                onEnterBack: () => updateGavetas(i)
-            });
+        ScrollTrigger.create({
+            trigger: "#main-wrapper",
+            start: "top top",
+            end: "bottom bottom",
+            scrub: true,
+
+            onUpdate: self => {
+                const total = sections.length - 1;
+                const progress = self.progress * total;
+
+                updateGavetas(progress);
+            }
         });
     }
 
@@ -953,7 +956,6 @@ function openNav() {
 
 function closeNav() {
     navOpen = false;
-
     gsap.to(navFrameEl, {
         x: "-100%",
         duration: 0.4,
@@ -972,41 +974,29 @@ function closeNav() {
     });
 }
 
-/* TOQUE NO BOTÃO INDEX */
+// TOQUE NO BOTÃO INDEX
 navTabEl.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // impede o document de receber o evento
 
     if (navOpen) closeNav();
     else openNav();
 }, { passive: false });
 
-
-/* ZONA DA ESQUERDA (DESLIZAR) */
+// ZONA DA ESQUERDA (DESLIZAR)
 navZoneEl.addEventListener("touchstart", (e) => {
     e.preventDefault();
+    e.stopPropagation(); // impede o document de fechar
     openNav();
 }, { passive: false });
 
+// FECHAR AO TOCAR FORA
+document.addEventListener("touchstart", (e) => {
+    if (navOpen && !e.target.closest("#navFrame") && !e.target.closest("#navTab")) {
+        closeNav();
+    }
+}, { passive: false });
 
-if (isMobile) {
-
-    navTabEl.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (navOpen) closeNav();
-        else openNav();
-
-    }, { passive: false });
-
-
-    navZoneEl.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        openNav();
-    }, { passive: false });
-
-}
 </script>
 </body>
 </html>
