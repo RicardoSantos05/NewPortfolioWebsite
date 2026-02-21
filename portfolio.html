@@ -9,6 +9,7 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
   <style>
     /* ================= BASE ================= */
@@ -73,13 +74,23 @@
     .nav-arrow.disabled { opacity: 0.1; pointer-events: none; }
 
     /* ================= HERO INNOVATION ================= */
-    .hero-text { position: relative; perspective: 1000px; }
+    .hero-text { position: relative; perspective: 1000px; display: flex; flex-direction: column; align-items: center; }
     #energy-name { 
         font-family: 'Orbitron'; 
-        font-size: clamp(2.5rem, 6vw, 6rem); 
+        font-size: clamp(2.2rem, 6vw, 6rem); 
         margin-bottom: 5px; 
         position: relative;
         letter-spacing: -2px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0 20px; 
+        white-space: normal;
+        text-align: center;
+    }
+    .name-word {
+        white-space: nowrap; 
+        display: inline-block;
     }
     .hero-sub-tag {
         font-family: 'Orbitron';
@@ -164,7 +175,7 @@
     .project-info-hub { display: flex; flex-direction: column; justify-content: space-between; padding: 30px; background: rgba(1, 10, 15, 0.8); border: 1px solid rgba(79, 195, 255, 0.1); backdrop-filter: blur(10px); }
     .info-header h2 { font-family: 'Orbitron'; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; color: #fff; }
     .info-body p { font-size: 0.9rem; line-height: 1.6; color: rgba(234, 246, 255, 0.85); }
-    .tech-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
+    .tech-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; opacity: 1 !important; visibility: visible !important; }
     .tech-tag { font-family: 'Orbitron'; font-size: 0.7rem; padding: 12px; background: rgba(79, 195, 255, 0.05); border-left: 4px solid var(--accent-color); }
     
     .selection-hud { display: flex; background: rgba(0, 10, 15, 0.95); border: 1px solid rgba(79, 195, 255, 0.2); align-items: stretch; height: 140px; overflow: hidden; z-index: 50; }
@@ -253,10 +264,10 @@
         }
 
         .display-core { grid-template-columns: 1fr; display: flex; flex-direction: column; gap: 10px; } 
-        .project-info-hub { display: flex; padding: 15px; margin-top: 10px; height: auto; border-left: 2px solid var(--accent-color); } 
+        .project-info-hub { display: flex !important; opacity: 1 !important; padding: 15px; margin-top: 10px; height: auto; border-left: 2px solid var(--accent-color); visibility: visible !important; } 
         .info-header h2 { font-size: 1.1rem; }
         .info-body p { font-size: 0.8rem; }
-        .tech-grid { grid-template-columns: 1fr 1fr; }
+        .tech-grid { display: grid !important; grid-template-columns: 1fr; opacity: 1 !important; visibility: visible !important; }
         
         .cinema-container { height: auto; padding-top: 10px; opacity: 1 !important; }
         .selection-hud { height: 100px; margin-top: 15px; }
@@ -269,11 +280,11 @@
         .about-selfie-box { width: 180px; height: 180px; margin: 0 auto; opacity: 1 !important; transform: none !important; }
         .vam-logo-container { width: 150px; height: 150px; margin: 0 auto; opacity: 1 !important; }
         
-        #energy-name { font-size: 2.5rem; }
+        #energy-name { font-size: 2.2rem; gap: 0 10px; }
         .tech-deck { display: grid; grid-template-columns: repeat(3, 1fr); place-items: center; gap: 20px; opacity: 1 !important; }
         .tech-item { width: 50px; height: 50px; }
         
-        .vertical-hud-nav { display: none; } /* Setas de navegação não são necessárias com scroll natural */
+        .vertical-hud-nav { display: none; } 
         
         #skills > div { grid-template-columns: 1fr !important; opacity: 1 !important; }
         .terminal-output { padding: 15px; font-size: 0.9rem; opacity: 1 !important; }
@@ -358,7 +369,7 @@
                         <div class="info-header"><h2 id="p-title">LOADING...</h2></div>
                         <div class="info-body"><p id="p-desc">Initializing data stream...</p></div>
                     </div>
-                    <div class="tech-grid">
+                    <div class="tech-grid" id="tech-grid-container">
                         <div class="tech-tag" id="p-tech">> TECH: ---</div>
                         <div class="tech-tag" id="p-status">> STATUS: ---</div>
                         <div class="tech-tag" id="p-role">> ROLE: ---</div>
@@ -446,7 +457,7 @@
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-gsap.registerPlugin(Draggable);
+gsap.registerPlugin(Draggable, ScrollTrigger);
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1100;
 
@@ -459,7 +470,7 @@ let backgroundState = { color: sectionColors[0] };
 const projectData = [
     { id: "01", title: "Disasterpiece", ytId: "p-iEk12fKVg", tech: "Blueprints (UE5)", status: "In Development", role: "Main Programmer", desc: "(In Development) 3D physics-based cooperative stealth game focused on chaotic gameplay. Responsible for gameplay mechanics, local multiplayer systems, and physics interactions. Project was born since my pitch presentation, where I presented this idea for Disasterpiece, being chosen upon many other good ideas. ", type: "core" },
     { id: "02", title: "Huddle", ytId: "xc00pYL6FSQ", tech: "Blueprints (UE5)", status: "Complete", role: "Programmer", desc: "3D underwater survival horror game in Unreal Engine 5. Developed underwater player movement, gameplay randomized systems, AI behavior, gameplay loop mechanics and UI flow/progress.", type: "core" },
-    { id: "03", title: "InTempo", ytId: "WYD7B2Je20E", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D rhythm platformer where gameplay reacts to music and sound progression. Implemented movement, rhythm-based mechanics, and environment synchronization (Obstacles/Puzzles). Project saw the light of the day as it was chosen upon many other ideas at the pitch presentation, where I presented the whole core of InTempo", type: "core" },
+    { id: "03", title: "InTempo", ytId: "WYD7B2Je20E", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D rhythm platformer where gameplay reacts to music and sound progression. Implemented movement, rhythm-based mechanics, and environment synchronization (Obstacles/Puzzles). Project saw the light of the day as it was chosen upon many other ideas at the pitch presentation, where I presented the whole core of InTempo.", type: "core" },
     { id: "04", title: "Hurrya", ytId: "LcJSNficHWQ", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D top-down adventure and survival game set in a war scenario. Developed core mechanics, AI detection, sanity system, and exploration gameplay (Randomization). Project made in Unity in two weeks as a project for the subject «Sistemas e Motores» in which we had very specific conditions to make games in a short period of time.", type: "extra" },
     { id: "05", title: "AV360 Experience", ytId: "GwSYp1urrSI", tech: "Unity / XR", status: "Complete", role: "Programmer", desc: "360 interactive video experience featuring XR Interaction tools from Unity. Spatialized Audio implementation and narrative consequences by the player's own choices.", type: "extra" },
     { id: "06", title: "Maybe I’m Wrong", ytId: "6f83sdhlhzo", tech: "C# (Unity)", status: "Incomplete", role: "Programmer", desc: "First ever prototype/experience developed as a programmer during my bachelor. As a group we were only asked to have a very «raw» prototype to be easier to explain our project. Despite that, we ended going a litle further to test ourselves using and exploring the programs we were just taught a few weeks prior.", type: "extra" }
@@ -519,7 +530,7 @@ function initNeuralBackground() {
         constructor() { this.init(); }
         init() {
             this.x = Math.random() * window.innerWidth;
-            this.y = Math.random() * (isMobile ? window.innerHeight : worldHeight);
+            this.y = Math.random() * (isMobile ? window.innerHeight * 5 : worldHeight);
             this.vx = (Math.random() - 0.5) * 0.6;
             this.vy = (Math.random() - 0.5) * 0.6;
             this.size = Math.random() * 2;
@@ -527,11 +538,11 @@ function initNeuralBackground() {
         update() {
             this.x += this.vx; this.y += this.vy;
             if (this.x < 0 || this.x > window.innerWidth) this.vx *= -1;
-            const limit = isMobile ? window.innerHeight : worldHeight;
+            const limit = isMobile ? window.innerHeight * 5 : worldHeight;
             if (this.y < 0 || this.y > limit) this.vy *= -1;
         }
         draw(offsetY) {
-            const screenY = isMobile ? this.y : this.y - offsetY;
+            const screenY = isMobile ? this.y - window.scrollY : this.y - offsetY;
             if (screenY > -150 && screenY < window.innerHeight + 150) {
                 ctx.fillStyle = backgroundState.color;
                 ctx.beginPath(); ctx.arc(this.x, screenY, this.size, 0, Math.PI * 2); ctx.fill();
@@ -547,8 +558,8 @@ function initNeuralBackground() {
             for (let j = i + 1; j < (isMobile ? 50 : 250); j++) {
                 const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 100) {
-                    const y1 = isMobile ? particles[i].y : particles[i].y - offsetY;
-                    const y2 = isMobile ? particles[j].y : particles[j].y - offsetY;
+                    const y1 = isMobile ? particles[i].y - window.scrollY : particles[i].y - offsetY;
+                    const y2 = isMobile ? particles[j].y - window.scrollY : particles[j].y - offsetY;
                     if (y1 > -100 && y1 < window.innerHeight + 100) {
                         ctx.strokeStyle = backgroundState.color; ctx.globalAlpha = 0.2 * (1 - dist/100); ctx.lineWidth = 0.5;
                         ctx.beginPath(); ctx.moveTo(particles[i].x, y1); ctx.lineTo(particles[j].x, y2); ctx.stroke(); ctx.globalAlpha = 1.0;
@@ -559,7 +570,7 @@ function initNeuralBackground() {
         requestAnimationFrame(animate);
     }
     resize(); window.addEventListener('resize', resize);
-    for (let i = 0; i < (isMobile ? 80 : 500); i++) particles.push(new Particle());
+    for (let i = 0; i < (isMobile ? 120 : 500); i++) particles.push(new Particle());
     animate();
 }
 
@@ -575,10 +586,15 @@ function triggerEnergyPulse(parent) {
 function scrambleEffect(element, customText = null, isTitle = false) {
     if (!element) return;
     gsap.killTweensOf(element);
-    const finalStr = customText || element.getAttribute('data-final-text') || element.innerText;
+    
+    // TEXTO FINAL: O que queremos mostrar no fim (limpo de tags)
+    let finalStr = customText || element.getAttribute('data-final-text') || element.innerText;
+    if (element.id === "energy-name") finalStr = "RICARDO SANTOS";
+    
     element.setAttribute('data-final-text', finalStr);
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
     
+    // Ativa selfies e scanlines se necessário
     if (element.id === "energy-name" || (isTitle && finalStr.includes("ABOUT ME"))) {
         const targetBox = element.id === "energy-name" ? ".hero-selfie-box" : ".about-selfie-box";
         const targetSl = element.id === "energy-name" ? ".sl-hero" : ".sl-about";
@@ -598,13 +614,32 @@ function scrambleEffect(element, customText = null, isTitle = false) {
                 if(i < currentIdx) result += finalStr[i];
                 else result += chars[Math.floor(Math.random() * chars.length)];
             }
+            // Durante a animação usamos APENAS texto puro para evitar injetar tags HTML erradas
             element.innerText = result;
         },
         onComplete: () => {
             if (isTitle) {
-                element.innerHTML = finalStr.split('').map(c => `<span class="pulse-char">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+                // SÓ AQUI, NO FIM, é que construímos os spans para o layout e para as letras pulsantes
+                if(element.id === "energy-name") {
+                    // Divide o nome em palavras para garantir a quebra correta no mobile
+                    const words = finalStr.split(" ");
+                    let htmlContent = "";
+                    words.forEach((word, wIdx) => {
+                        htmlContent += `<span class="name-word">`;
+                        word.split("").forEach(char => {
+                            htmlContent += `<span class="pulse-char">${char}</span>`;
+                        });
+                        htmlContent += `</span>`;
+                        if(wIdx < words.length - 1) htmlContent += `<span class="pulse-char">&nbsp;</span>`;
+                    });
+                    element.innerHTML = htmlContent;
+                } else {
+                    element.innerHTML = finalStr.split('').map(c => `<span class="pulse-char">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+                }
                 triggerEnergyPulse(element);
-            } else { element.innerText = finalStr; }
+            } else { 
+                element.innerText = finalStr; 
+            }
         }
     });
 }
@@ -618,7 +653,7 @@ function startPeriodicPulse() {
 }
 
 function animateSectionHUD(idx, direction = "in") {
-    if (isMobile) return; // No mobile o conteúdo já está visível
+    if (isMobile) return; 
     const section = sections[idx];
     if (!section) return;
     const targets = section.querySelectorAll('.section-title, .terminal-output, .cinema-container, .display-core, .tech-grid, .about-content, .edu-content, .tech-deck, .hero-sub-tag');
@@ -632,15 +667,17 @@ function animateSectionHUD(idx, direction = "in") {
 }
 
 function updateGavetas(p) {
-    if (isMobile) return;
     const oldIdx = Math.round(currentProg);
     p = gsap.utils.clamp(0, sections.length - 1, p);
     const newIdx = Math.round(p);
     currentProg = p; 
     const activeColor = sectionColors[newIdx];
+    
     gsap.to(backgroundState, { color: activeColor, duration: 0.8 });
     
-    gsap.to([".section-title", "#energy-name", ".skill-label", ".index-header-text", "#project-next-btn", ".nav-tab", ".cv-btn", ".scan-filter", ".scanline-moving", ".vam-logo-container", ".hero-sub-tag", ".nav-arrow"], { color: activeColor, borderColor: activeColor, duration: 0.8, overwrite: "auto" });
+    gsap.to([".section-title", "#energy-name", ".skill-label", ".index-header-text", "#project-next-btn", ".nav-tab", ".cv-btn", ".scan-filter", ".scanline-moving", ".vam-logo-container", ".hero-sub-tag", ".nav-arrow"], { 
+        color: activeColor, borderColor: activeColor, duration: 0.8, overwrite: "auto" 
+    });
     gsap.to(".hud-bracket", { borderColor: activeColor, duration: 0.8, overwrite: "auto" });
     gsap.to(".tech-item img", { filter: `drop-shadow(0 0 8px ${activeColor}) brightness(0.9)`, duration: 0.8 });
 
@@ -653,20 +690,24 @@ function updateGavetas(p) {
     }
 
     if (newIdx !== oldIdx) {
-        animateSectionHUD(oldIdx, "out");
-        animateSectionHUD(newIdx, "in");
+        if (!isMobile) {
+            animateSectionHUD(oldIdx, "out");
+            animateSectionHUD(newIdx, "in");
+        }
         const title = sections[newIdx].querySelector('.section-title');
         if (title) scrambleEffect(title, null, true);
     }
 
-    sections.forEach((section, i) => {
-        let diff = p - i;
-        const absDiff = Math.abs(diff);
-        if (i === newIdx) gsap.set(section, { filter: "none", opacity: 1, yPercent: diff * 0 });
-        if (i === 0) gsap.set(section.querySelector('.hero-content'), { y: -diff * 100, opacity: 1 - absDiff, filter: absDiff > 0.01 ? `blur(${absDiff * 10}px)` : "none" });
-        if (diff > 0) gsap.set(section, { yPercent: -diff * 100, opacity: 1 - (diff * 0.7), filter: diff > 0.01 ? `brightness(${1 - (diff * 0.8)}) blur(${diff * 10}px)` : "none", zIndex: i });
-        else { gsap.set(section, { yPercent: (i - p) * 100, opacity: 1, filter: "none", zIndex: 100 + i }); }
-    });
+    if (!isMobile) {
+        sections.forEach((section, i) => {
+            let diff = p - i;
+            const absDiff = Math.abs(diff);
+            if (i === newIdx) gsap.set(section, { filter: "none", opacity: 1, yPercent: diff * 0 });
+            if (i === 0) gsap.set(section.querySelector('.hero-content'), { y: -diff * 100, opacity: 1 - absDiff, filter: absDiff > 0.01 ? `blur(${absDiff * 10}px)` : "none" });
+            if (diff > 0) gsap.set(section, { yPercent: -diff * 100, opacity: 1 - (diff * 0.7), filter: diff > 0.01 ? `brightness(${1 - (diff * 0.8)}) blur(${diff * 10}px)` : "none", zIndex: i });
+            else { gsap.set(section, { yPercent: (i - p) * 100, opacity: 1, filter: "none", zIndex: 100 + i }); }
+        });
+    }
     document.querySelectorAll('.menu-link').forEach((a, i) => a.classList.toggle('active', i === newIdx));
 }
 
@@ -717,12 +758,24 @@ function initEngine() {
     });
 
     if (isMobile) {
-        // Ativa visibilidade total no mobile
         gsap.set("section, .cinema-container, .display-core, .terminal-output, .about-content, .edu-content, .tech-deck, .section-title", { 
             opacity: 1, visibility: "visible", y: 0 
         });
+        
+        gsap.set(".project-info-hub, .tech-grid", { opacity: 1, visibility: "visible", display: "flex" });
+
         document.getElementById('main-wrapper').style.visibility = "visible";
         document.getElementById('main-wrapper').style.opacity = "1";
+
+        sections.forEach((sec, i) => {
+            ScrollTrigger.create({
+                trigger: sec,
+                start: "top center",
+                end: "bottom center",
+                onEnter: () => updateGavetas(i),
+                onEnterBack: () => updateGavetas(i)
+            });
+        });
     }
 
     document.getElementById('project-next-btn').addEventListener('click', (e) => { e.stopPropagation(); selectProject((activeProjectIdx + 1) % projectData.length); });
@@ -765,7 +818,10 @@ function initEngine() {
 function animateToIdx(idx) { 
     if (isMobile) {
         const target = sections[idx];
-        if (target) target.scrollIntoView({ behavior: 'smooth' });
+        if (target) {
+            const topOffset = target.offsetTop;
+            window.scrollTo({ top: topOffset, behavior: 'smooth' });
+        }
         return;
     }
     sections.forEach(s => gsap.set(s, { clearProps: "filter" }));
