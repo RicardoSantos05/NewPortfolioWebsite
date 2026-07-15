@@ -151,20 +151,104 @@
     .terminal-output, .cinema-container, .display-core, .tech-grid, .about-content, .edu-content, .tech-deck { opacity: 0; }
 
     .selfie-wrapper { position: relative; opacity: 0; transform: translateX(-20px); }
-    .hero-selfie-box { width: 180px; height: 180px; }
+    .hero-selfie-box, .about-selfie-box { position: relative; }
+    .hero-selfie-box { width: 280px; height: 280px; }
+    .hero-selfie-box::after, .about-selfie-box::after {
+        content: "";
+        position: absolute;
+        inset: -10px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        border: 2px solid rgba(79, 195, 255, 0.55);
+        box-shadow: 0 0 32px rgba(79, 195, 255, 0.45), 0 0 0 10px rgba(79, 195, 255, 0.22);
+        pointer-events: none;
+        z-index: 5;
+        animation: holoPulse 3s ease-in-out infinite, holoFlicker 8s linear infinite, holoBorderWave 3.5s ease-in-out infinite;
+        opacity: 0.95;
+    }
+    .hero-selfie-box::before, .about-selfie-box::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        background: conic-gradient(from 180deg, rgba(79, 195, 255, 0.15), rgba(0, 255, 255, 0.1), rgba(255, 120, 255, 0.14), rgba(79, 195, 255, 0.15));
+        pointer-events: none;
+        z-index: 6;
+        mix-blend-mode: screen;
+        opacity: 0.9;
+        animation: holoSpin 6s linear infinite, holoFlicker 8s linear infinite;
+    }
     .hero-selfie-box .selfie-container { border-radius: 50%; -webkit-mask-image: radial-gradient(circle, black 35%, transparent 65%); mask-image: radial-gradient(circle, black 77%, transparent 68%); }
 
-    .about-selfie-box { width: 440px; height: 500px; flex-shrink: 0; }
+    .about-selfie-box { width: 440px; height: 440px; flex-shrink: 0; }
     .about-selfie-box .selfie-container { 
         border-radius: 50%; 
         -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 68%); 
         mask-image: radial-gradient(circle at center, black 30%, transparent 68%); 
     }
 
-    .selfie-container { width: 100%; height: 100%; position: relative; overflow: hidden; background: #000; border: 1px solid rgba(79, 195, 255, 0.2); }
-    .selfie-container img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: sepia(1) saturate(2) hue-rotate(175deg) brightness(0.8) contrast(1.1); opacity: 0.8; }
-    .scan-filter { position: absolute; inset: 0; background: rgba(0, 55, 83, 0.13); pointer-events: none; }
+    .selfie-container { width: 100%; height: 100%; position: relative; overflow: hidden; background: #000; border: 1px solid rgba(79, 195, 255, 0.22); }
+    .selfie-container img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: none; opacity: 1; }
+    .hero-selfie-box .selfie-container img { transform: scale(1.05); }
+    .hero-selfie-box .scan-filter, .about-selfie-box .scan-filter { background: transparent; }
+    .scan-filter { position: absolute; inset: 0; background: transparent; pointer-events: none; }
     .scanline-moving { position: absolute; top: -10%; left: 0; width: 100%; height: 4px; background: var(--accent-color); box-shadow: 0 0 15px var(--accent-color); opacity: 0.6; pointer-events: none; z-index: 10; }
+
+    @keyframes holoPulse {
+        0%, 100% { transform: scale(1); opacity: 0.95; }
+        25% { transform: scale(1.03); opacity: 1; }
+        50% { transform: scale(1.06); opacity: 0.8; }
+        75% { transform: scale(1.03); opacity: 0.92; }
+    }
+    @keyframes holoSpin {
+        0% { transform: rotate(0deg); opacity: 0.9; }
+        50% { transform: rotate(180deg); opacity: 1; }
+        100% { transform: rotate(360deg); opacity: 0.9; }
+    }
+    @keyframes holoFlicker {
+        0% { opacity: 0.95; }
+        10% { opacity: 0.5; }
+        14% { opacity: 0.98; }
+        18% { opacity: 0.55; }
+        33% { opacity: 0.9; }
+        45% { opacity: 0.35; }
+        52% { opacity: 0.88; }
+        67% { opacity: 0.6; }
+        82% { opacity: 0.96; }
+        100% { opacity: 0.95; }
+    }
+    @keyframes holoBorderWave {
+        0%, 100% {
+            border-width: 2px;
+            box-shadow: 0 0 32px rgba(79, 195, 255, 0.45), 0 0 0 10px rgba(79, 195, 255, 0.22);
+            transform: scale(1);
+        }
+        15% {
+            border-width: 4px;
+            box-shadow: 0 0 42px rgba(79, 195, 255, 0.55), 0 0 0 14px rgba(79, 195, 255, 0.26);
+            transform: scale(1.02);
+        }
+        35% {
+            border-width: 1px;
+            box-shadow: 0 0 24px rgba(79, 195, 255, 0.35), 0 0 0 6px rgba(79, 195, 255, 0.14);
+            transform: scale(0.99);
+        }
+        55% {
+            border-width: 5px;
+            box-shadow: 0 0 48px rgba(79, 195, 255, 0.65), 0 0 0 18px rgba(79, 195, 255, 0.3);
+            transform: scale(1.03);
+        }
+        75% {
+            border-width: 2px;
+            box-shadow: 0 0 30px rgba(79, 195, 255, 0.42), 0 0 0 9px rgba(79, 195, 255, 0.16);
+            transform: scale(1);
+        }
+        90% {
+            border-width: 3px;
+            box-shadow: 0 0 36px rgba(79, 195, 255, 0.5), 0 0 0 12px rgba(79, 195, 255, 0.22);
+            transform: scale(1.01);
+        }
+    }
 
     .hero-content, .about-content { display: flex; align-items: center; gap: 60px; }
     .pulse-char { display: inline-block; position: relative; transition: color 0.2s; }
@@ -222,7 +306,11 @@
         line-height: 1.6;
         margin-bottom: 15px; 
         width: 100%;
+        min-width: 0;
         box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
     .skill-label { 
         font-family: 'Orbitron'; 
@@ -301,6 +389,14 @@
         #project-next-btn { min-width: 50px; font-size: 1.5rem; }
 
         .hero-content, .about-content, .edu-content { flex-direction: column; text-align: center; gap: 30px; opacity: 1 !important; } 
+        .about-content { align-items: center; }
+        .about-terminal-wrapper { width: 100%; min-width: 0; }
+        .about-terminal-wrapper .terminal-output { min-width: 0; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
+        .about-terminal-wrapper .terminal-output:last-child { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .about-terminal-wrapper .terminal-output p, .about-terminal-wrapper .terminal-output span { min-width: 0; }
+        .about-terminal-wrapper .terminal-output p { max-width: 100%; margin-bottom: 0.85rem; }
+        .about-terminal-wrapper .terminal-output, .terminal-output { box-sizing: border-box; padding: 18px; }
+        .cv-btn { width: 100%; text-align: center; }
         .hero-selfie-box { width: 140px; height: 140px; margin: 0 auto; opacity: 1 !important; transform: none !important; }
         .about-selfie-box { width: 180px; height: 180px; margin: 0 auto; opacity: 1 !important; transform: none !important; }
         .vam-logo-container { width: 150px; height: 150px; margin: 0 auto; opacity: 1 !important; }
@@ -366,7 +462,7 @@
         <div class="hero-content">
             <div class="selfie-wrapper hero-selfie-box">
                 <div class="selfie-container">
-                    <img src="RicardoSelfie.png" alt="Ricardo Santos">
+                    <img src="RicardoSelfie2.png" alt="Ricardo Santos Portrait">
                     <div class="scan-filter"></div>
                     <div class="scanline-moving sl-hero"></div>
                 </div>
@@ -466,7 +562,7 @@
       <div class="about-content" style="width: 100%; max-width: 1400px; margin: 0 auto;">
           <div class="selfie-wrapper about-selfie-box">
               <div class="selfie-container">
-                  <img src="RicardoSelfie2.png" alt="Ricardo Santos Portrait">
+                  <img src="RicardoSelfie.png" alt="Ricardo Santos">
                   <div class="scan-filter"></div>
                   <div class="scanline-moving sl-about"></div>
               </div>
@@ -503,7 +599,7 @@ const sectionColors = ["#4fc3ff", "#bc4fff", "#00ffcc", "#ff9d00", "#ff4f4f"];
 let backgroundState = { color: sectionColors[0] };
 
 const projectData = [
-    { id: "01", title: "Disasterpiece", ytId: "p-iEk12fKVg", tech: "Blueprints (UE5)", status: "In Development", role: "Main Programmer", desc: "(In Development) 3D physics-based cooperative stealth game focused on chaotic gameplay. Responsible for gameplay mechanics, local multiplayer systems, and physics interactions. Project was born since my pitch presentation, where I presented this idea for Disasterpiece, being chosen upon many other good ideas. ", type: "core" },
+    { id: "01", title: "Disasterpiece", ytId: "QQil3LRj7aY", tech: "Blueprints (UE5)", status: "In Development", role: "Main Programmer", desc: "(In Development) 3D physics-based cooperative stealth game focused on chaotic gameplay. Responsible for gameplay mechanics, local multiplayer systems, and physics interactions. Project was born since my pitch presentation, where I presented this idea for Disasterpiece, being chosen upon many other good ideas. ", type: "core" },
     { id: "02", title: "Huddle", ytId: "xc00pYL6FSQ", tech: "Blueprints (UE5)", status: "Complete", role: "Programmer", desc: "3D underwater survival horror game in Unreal Engine 5. Developed underwater player movement, gameplay randomized systems, AI behavior, gameplay loop mechanics and UI flow/progress.", type: "core" },
     { id: "03", title: "InTempo", ytId: "WYD7B2Je20E", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D rhythm platformer where gameplay reacts to music and sound progression. Implemented movement, rhythm-based mechanics, and environment synchronization (Obstacles/Puzzles). Project saw the light of the day as it was chosen upon many other ideas at the pitch presentation, where I presented the whole core of InTempo.", type: "core" },
     { id: "04", title: "Hurrya", ytId: "LcJSNficHWQ", tech: "C# (Unity)", status: "Complete", role: "Programmer", desc: "2D top-down adventure and survival game set in a war scenario. Developed core mechanics, AI detection, sanity system, and exploration gameplay (Randomization). Project made in Unity in two weeks as a project for the subject «Sistemas e Motores» in which we had very specific conditions to make games in a short period of time.", type: "extra" },
